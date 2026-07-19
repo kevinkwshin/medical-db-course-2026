@@ -57,20 +57,21 @@ slides = [
            note="연구 관점 번역: INNER는 '둘 다 있는 사람 분석', LEFT는 '<b>없는 사람이 누구인지</b>까지 분석'. "
                 "결측을 다루는 순간 LEFT JOIN이 기본값이 됩니다."),
 
-    qsql("당뇨 환자 전원 명단에 HbA1c 검사 여부를 표시하라",
-         "SELECT dm.patient_id,\n       l.result_value AS hba1c\nFROM (SELECT DISTINCT v.patient_id\n      FROM diagnosis d\n      JOIN visit v ON d.visit_id = v.visit_id\n      WHERE d.kcd_code LIKE 'E11%') dm\nLEFT JOIN visit v2 ON v2.patient_id = dm.patient_id\nLEFT JOIN lab l ON l.visit_id = v2.visit_id\n              AND l.test_name = 'HbA1c'\nGROUP BY dm.patient_id;",
+    qsql("당뇨 환자 전원 명단에 HbA1c 검사 이력을 표시하라",
+         "SELECT dm.patient_id,\n       COUNT(l.lab_id) AS 검사건수,\n       MAX(l.collected_at) AS 최근검사시각\nFROM (SELECT DISTINCT v.patient_id\n      FROM diagnosis d\n      JOIN visit v ON d.visit_id = v.visit_id\n      WHERE d.kcd_code LIKE 'E11%') dm\nLEFT JOIN visit v2 ON v2.patient_id = dm.patient_id\nLEFT JOIN lab l ON l.visit_id = v2.visit_id\n              AND l.test_name = 'HbA1c'\nGROUP BY dm.patient_id;",
          max_rows=9,
          title="LEFT JOIN 실전 — 전원 유지하며 붙이기",
-         note="hba1c가 <b>∅(NULL)인 환자가 보입니다</b> — INNER JOIN이었다면 명단에서 통째로 사라졌을 "
-              "사람들. \"검사를 안 받았다\"는 사실은 LEFT JOIN이어야만 화면에 나타납니다."),
+         note="검사건수 0, 최근검사시각 <b>∅(NULL)인 환자가 보입니다</b> — INNER JOIN이었다면 명단에서 "
+              "통째로 사라졌을 사람들. GROUP BY 뒤의 일반 컬럼은 SQLite가 <b>임의의 행 값</b>을 돌려주므로, "
+              "COUNT·MAX처럼 집계함수로 의도를 명시해야 합니다."),
 
     qsql("그래서, HbA1c 검사를 한 번도 안 받은 당뇨 환자는 누구인가?",
          "SELECT DISTINCT v.patient_id\nFROM diagnosis d\nJOIN visit v ON d.visit_id = v.visit_id\nWHERE d.kcd_code LIKE 'E11%'\n  AND v.patient_id NOT IN (\n    SELECT v2.patient_id\n    FROM lab l\n    JOIN visit v2 ON l.visit_id = v2.visit_id\n    WHERE l.test_name = 'HbA1c');",
          title="결측 환자 찾기 — 질 지표의 원형",
          tag="대표 질문",
          note="P007, P013 — 당뇨 진단은 있는데 당화혈색소 추적이 없는 환자입니다. "
-              "이 쿼리가 <b>진료 질 지표(당뇨 환자 HbA1c 검사율)</b>와 "
-              "<b>결측 파악</b>의 원형입니다. 다음 주에 NOT EXISTS로 다시 씁니다."),
+              "이 쿼리가 <b>진료 질 지표(당뇨 환자 HbA1c 검사율)</b>와 <b>결측 파악</b>의 원형입니다. "
+              "이 NOT IN은 하위 명단에 NULL이 없어 안전합니다 — NULL이 섞일 때의 위험은 다음 주의 핵심 주제."),
 
     qsql("진료과별 담당의(staff) 정보까지 — 3테이블 기본 연습",
          "SELECT v.visit_id, v.visit_date,\n       p.sex AS 환자성별,\n       s.role, s.department AS 소속과\nFROM visit v\nJOIN patient p ON v.patient_id = p.patient_id\nJOIN staff s   ON v.attending_id = s.staff_id\nWHERE v.visit_type = '입원'\nORDER BY v.visit_date DESC;",

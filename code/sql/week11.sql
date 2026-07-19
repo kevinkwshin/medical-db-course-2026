@@ -25,8 +25,10 @@ JOIN lab l    ON l.visit_id = v2.visit_id
 WHERE d.kcd_code LIKE 'E11%' AND l.test_name = 'HbA1c'
 ORDER BY v.patient_id, l.collected_at;
 
--- 당뇨 환자 전원 + HbA1c 여부 (NULL = 미검사)
-SELECT dm.patient_id, l.result_value AS hba1c
+-- 당뇨 환자 전원 + HbA1c 검사 건수·최근 검사시각 (NULL = 미검사)
+SELECT dm.patient_id,
+       COUNT(l.lab_id) AS 검사건수,
+       MAX(l.collected_at) AS 최근검사시각
 FROM (SELECT DISTINCT v.patient_id
       FROM diagnosis d JOIN visit v ON d.visit_id = v.visit_id
       WHERE d.kcd_code LIKE 'E11%') dm
@@ -70,6 +72,7 @@ JOIN visit v ON i.visit_id = v.visit_id
 WHERE i.modality = 'MRI' AND i.body_part = '뇌';
 
 -- A3. 영상 없는 환자 수
+-- 하위 명단에 NULL이 없어 NOT IN이 안전 (NULL 위험은 12주차에서)
 SELECT COUNT(*) FROM patient p
 WHERE p.patient_id NOT IN (
   SELECT v.patient_id FROM imaging i JOIN visit v ON i.visit_id = v.visit_id);

@@ -21,10 +21,11 @@ SELECT COUNT(*) AS 입원건수,
        MAX(julianday(discharge_date) - julianday(visit_date)) AS 최장재원일
 FROM visit WHERE visit_type = '입원';
 
--- 정상범위 벗어난 검사 비율 (CASE×SUM 패턴)
+-- 정상범위 벗어난 검사 비율 (CASE×SUM 패턴) — 분모는 결과값이 있는 검사만
 SELECT COUNT(*) AS 전체검사,
+  COUNT(result_value) AS 판정가능검사,
   SUM(CASE WHEN result_value > ref_high OR result_value < ref_low THEN 1 ELSE 0 END) AS 이상건수,
-  ROUND(100.0 * SUM(CASE WHEN result_value > ref_high OR result_value < ref_low THEN 1 ELSE 0 END) / COUNT(*), 1) AS 이상비율
+  ROUND(100.0 * SUM(CASE WHEN result_value > ref_high OR result_value < ref_low THEN 1 ELSE 0 END) / COUNT(result_value), 1) AS 이상비율
 FROM lab;
 
 -- COUNT(*) vs COUNT(컬럼) — NULL의 조용한 제외

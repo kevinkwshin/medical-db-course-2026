@@ -9,7 +9,7 @@ FROM visit v JOIN diagnosis d ON v.visit_id = d.visit_id
 WHERE d.kcd_code LIKE 'I63%'
 GROUP BY v.patient_id ORDER BY first_dx_date;
 
--- index date 확정 (8명)
+-- index date 확정 (8명 — P029·P030은 2019년 진단력으로 제외)
 SELECT v.patient_id, MIN(v.visit_date) AS index_date
 FROM visit v JOIN diagnosis d ON v.visit_id = d.visit_id
 WHERE d.kcd_code LIKE 'I63%'
@@ -17,7 +17,7 @@ GROUP BY v.patient_id
 HAVING MIN(v.visit_date) >= '2020-01-01'
 ORDER BY index_date;
 
--- 코호트 + 성별 + index 시점 나이
+-- 코호트 + 성별 + index 시점 나이(연 나이 근사)
 WITH stroke_cohort AS (
   SELECT v.patient_id, MIN(v.visit_date) AS index_date
   FROM visit v JOIN diagnosis d ON v.visit_id = d.visit_id
@@ -29,7 +29,7 @@ SELECT c.patient_id, c.index_date, p.sex,
          - CAST(substr(p.birth_date,1,4) AS INT) AS age_at_index
 FROM stroke_cohort c JOIN patient p ON p.patient_id = c.patient_id;
 
--- 고혈압(I10) 동반 여부
+-- 고혈압(I10) 기저 동반 여부 — index date 이전 이력만
 WITH stroke_cohort AS (
   SELECT v.patient_id, MIN(v.visit_date) AS index_date
   FROM visit v JOIN diagnosis d ON v.visit_id = d.visit_id
@@ -39,8 +39,10 @@ WITH stroke_cohort AS (
 SELECT c.patient_id, c.index_date,
   CASE WHEN EXISTS (
     SELECT 1 FROM visit v2 JOIN diagnosis d2 ON d2.visit_id = v2.visit_id
-    WHERE v2.patient_id = c.patient_id AND d2.kcd_code LIKE 'I10%')
-  THEN 1 ELSE 0 END AS htn_comorbid
+    WHERE v2.patient_id = c.patient_id
+      AND d2.kcd_code LIKE 'I10%'
+      AND v2.visit_date <= c.index_date)
+  THEN 1 ELSE 0 END AS htn_baseline
 FROM stroke_cohort c;
 
 -- 성별·평균나이 요약

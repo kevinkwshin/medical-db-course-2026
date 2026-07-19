@@ -20,18 +20,18 @@ SELECT name FROM sqlite_master WHERE type='table' ORDER BY 1;
 -- CREATE TABLE IF NOT EXISTS vital_demo (visit_id TEXT, spo2 INTEGER CHECK (spo2 BETWEEN 0 AND 100));
 --     INSERT INTO vital_demo VALUES ('V0001', 250);
 
--- 컬럼 추가 후 테이블 정리
+-- 컬럼 추가 후 테이블 정리 — 이 셀을 두 번 실행하면 duplicate column 에러 (이미 있는 컬럼은 재추가 불가 — reset_db() 후 재실행)
 ALTER TABLE my_cohort ADD COLUMN htn_flag INTEGER DEFAULT 0;
 DROP TABLE IF EXISTS vital_demo;
 
 -- [연습 Q1] '수술(operation)' 테이블을 설계해 CREATE 하라 — 수술ID(PK), 내원ID(FK), 수술명(NOT NULL), 수술일, 집도의ID(FK)
--- 여기에 SQL을 작성하세요;
+-- 여기에 SQL을 작성하세요
 
--- [연습 Q2] operation에 마취종류 컬럼을 ALTER로 추가하고, CHECK로 ('전신','부위','국소')만 허용해 보라 — SQLite에서 기존 테이블에 CHECK 추가가 왜 어려운지 겪어보기
--- 여기에 SQL을 작성하세요;
+-- [연습 Q2] operation에 마취종류 컬럼을 ALTER로 추가해 보라 — CHECK 제약까지 걸려면 왜 어려운지 겪어보기
+-- 여기에 SQL을 작성하세요
 
 -- [연습 Q3] 자기 연구 주제의 코호트 테이블을 컬럼 6개 이상으로 설계하라 (과제 제출용)
--- 여기에 SQL을 작성하세요;
+-- 여기에 SQL을 작성하세요
 
 -- --------------------------------------------------
 -- 연습문제 정답

@@ -21,7 +21,7 @@ slides = [
         <tr><td><b>포함 기준</b></td><td>어떤 환자를 코호트에 넣나</td><td>WHERE + JOIN (진단코드, 기간)</td></tr>
         <tr><td><b>제외 기준</b></td><td>누구를 빼나</td><td>NOT EXISTS / NOT IN</td></tr>
         <tr><td><b>Index date</b></td><td>각 환자의 '시계 0시' — 추적 시작일</td><td>MIN(visit_date) 등으로 정의</td></tr>
-        <tr><td><b>Washout</b></td><td>과거 일정 기간 질환 이력이 없어야 '신규'로 인정</td><td>HAVING MIN(…) ≥ 기준일</td></tr>
+        <tr><td><b>Washout</b></td><td>index date 이전 일정 기간(look-back) 질환 이력이 없어야 '신규'로 인정</td><td>HAVING MIN(…) ≥ 기준일 (간이형)</td></tr>
         <tr><td><b>Table 1</b></td><td>코호트의 기저 특성 요약표</td><td>CASE × GROUP BY (6주차)</td></tr>
         </tbody></table>
         <div class="note">오늘의 연구 질문: <b>\"2020년 1월 1일 이후 처음으로 뇌경색(I63)을 진단받은 성인 환자\"</b>의
@@ -36,13 +36,14 @@ slides = [
               "이들은 2020년 이후 기준으로는 '신규 발생'이 아니라 '기존 환자'입니다. "
               "여기서 washout이 등장합니다."),
 
-    qsql("2단계 — washout 적용: '첫' 진단이 2020년 이후인 환자만",
+    qsql("2단계 — 신규 제한: 관찰된 '첫' 진단이 2020년 이후인 환자만",
          "SELECT v.patient_id,\n       MIN(v.visit_date) AS index_date\nFROM visit v\nJOIN diagnosis d\n  ON v.visit_id = d.visit_id\nWHERE d.kcd_code LIKE 'I63%'\nGROUP BY v.patient_id\nHAVING MIN(v.visit_date) >= '2020-01-01'\nORDER BY index_date;",
          max_rows=8,
-         title="Index date 확정",
+         title="Index date 확정 — 간이 washout",
          tag="대표 질문",
-         note="<b>HAVING MIN(visit_date) ≥ '2020-01-01'</b> — '가장 이른 진단'이 기준일 이후여야 신규. "
-              "P029·P030이 제외되어 8명이 남았습니다. 각 환자의 첫 진단일이 곧 <b>index date</b>가 됩니다."),
+         note="P029·P030이 제외되어 8명이 남고, 첫 진단일이 <b>index date</b>가 됩니다. 엄밀한 washout은 "
+              "index 이전 look-back 기간의 이력 부재 확인인데, 이 데이터는 관찰이 2019년부터라 이 조건이 "
+              "<b>약 1년 look-back의 간이형</b>이 됩니다 — 정의서에 이 한계를 명시해야 합니다."),
 
     code("3단계 — WITH로 단계를 이름 붙여 조립하기",
          """WITH stroke_cohort AS (          -- ① 신규 I63 코호트
@@ -62,15 +63,17 @@ SELECT c.patient_id, c.index_date,       -- ② 특성 붙이기
 FROM stroke_cohort c
 JOIN patient p ON p.patient_id = c.patient_id;""",
          note="<b>WITH(공통 테이블 표현식, CTE)</b>: 서브쿼리에 이름을 붙여 단계를 쌓는 문법. "
-              "정의서의 순서(포함→제외→특성)가 코드 구조에 그대로 보입니다 — 논문 Methods와 코드가 1:1 대응.",
+              "정의서의 순서(포함→제외→특성)가 코드 구조에 그대로 보입니다. "
+              "나이는 연도 차이(연 나이) 근사 — 생일 미도래 시 1세 크게 계산될 수 있습니다.",
          tag="CTE"),
 
-    qsql("4단계 — 기저 변수 추가: 고혈압(I10) 동반 여부 플래그",
-         "WITH stroke_cohort AS (\n  SELECT v.patient_id,\n         MIN(v.visit_date) AS index_date\n  FROM visit v\n  JOIN diagnosis d ON v.visit_id = d.visit_id\n  WHERE d.kcd_code LIKE 'I63%'\n  GROUP BY v.patient_id\n  HAVING MIN(v.visit_date) >= '2020-01-01')\nSELECT c.patient_id, c.index_date,\n  CASE WHEN EXISTS (\n    SELECT 1 FROM visit v2\n    JOIN diagnosis d2\n      ON d2.visit_id = v2.visit_id\n    WHERE v2.patient_id = c.patient_id\n      AND d2.kcd_code LIKE 'I10%')\n  THEN 1 ELSE 0 END AS htn_comorbid\nFROM stroke_cohort c;",
+    qsql("4단계 — 기저 변수: 고혈압(I10) 동반 여부 (index date 이전 이력만)",
+         "WITH stroke_cohort AS (\n  SELECT v.patient_id,\n         MIN(v.visit_date) AS index_date\n  FROM visit v\n  JOIN diagnosis d ON v.visit_id = d.visit_id\n  WHERE d.kcd_code LIKE 'I63%'\n  GROUP BY v.patient_id\n  HAVING MIN(v.visit_date) >= '2020-01-01')\nSELECT c.patient_id, c.index_date,\n  CASE WHEN EXISTS (\n    SELECT 1 FROM visit v2\n    JOIN diagnosis d2\n      ON d2.visit_id = v2.visit_id\n    WHERE v2.patient_id = c.patient_id\n      AND d2.kcd_code LIKE 'I10%'\n      AND v2.visit_date <= c.index_date)\n  THEN 1 ELSE 0 END AS htn_baseline\nFROM stroke_cohort c;",
          max_rows=8,
          title="동반질환 플래그 — EXISTS의 재등장",
-         note="EXISTS가 동반질환 플래그 제조기로 재등장 — 같은 패턴으로 어떤 기저 변수든 만들 수 있고, "
-              "<span class='mono'>WHERE NOT EXISTS(…)</span>로 바꾸면 제외 기준이 됩니다."),
+         note="<b>기저(baseline)이므로 index date 이전(당일 포함) 이력만</b> — 시간 조건이 없으면 뇌경색 "
+              "이후 생긴 고혈압까지 기저로 잘못 집계됩니다. 이것은 본 강의의 조작적 정의이며, 실제 연구는 "
+              "look-back 기간까지 명시합니다. NOT EXISTS로 바꾸면 제외 기준이 됩니다."),
 
     qsql("5단계 — Table 1: 코호트 기저 특성 요약",
          "WITH stroke_cohort AS (\n  SELECT v.patient_id,\n         MIN(v.visit_date) AS index_date\n  FROM visit v\n  JOIN diagnosis d ON d.visit_id = v.visit_id\n  WHERE d.kcd_code LIKE 'I63%'\n  GROUP BY v.patient_id\n  HAVING MIN(v.visit_date) >= '2020-01-01')\nSELECT p.sex AS 성별,\n  COUNT(*) AS 명수,\n  ROUND(AVG(CAST(substr(c.index_date,1,4) AS INT)\n    - CAST(substr(p.birth_date,1,4) AS INT)), 1)\n    AS 평균나이\nFROM stroke_cohort c\nJOIN patient p ON p.patient_id = c.patient_id\nGROUP BY p.sex;",

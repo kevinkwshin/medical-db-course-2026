@@ -68,4 +68,4 @@ SELECT * FROM diagnosis WHERE kcd_code LIKE 'J%';
 SELECT * FROM prescription WHERE duration_days BETWEEN 30 AND 90;
 
 -- A5. ref_high 없는 검사
-SELECT * FROM lab WHERE ref_high IS NULL;  -- 이 데이터셋에는 0행 — '없다'도 답이다
+SELECT * FROM lab WHERE ref_high IS NULL;  -- 이 데이터셋에서는 0행이 정답

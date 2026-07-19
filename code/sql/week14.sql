@@ -8,19 +8,23 @@ SELECT lab_id, test_name, result_value, unit
 FROM lab WHERE test_name = 'Glucose'
 ORDER BY result_value LIMIT 5;
 
--- 단위 감사 쿼리 — 분석 전 30초 습관
+-- 단위 감사 쿼리 — 분석 전 사전 점검
 SELECT test_name, unit, COUNT(*) AS 건수,
        MIN(result_value) AS 최소, MAX(result_value) AS 최대
 FROM lab GROUP BY test_name, unit ORDER BY test_name;
 
--- 당뇨 환자 수 vs HbA1c 검사자 수
+-- 당뇨 환자 수 vs 그중 HbA1c 검사자 수
 SELECT
   (SELECT COUNT(DISTINCT v.patient_id) FROM visit v
    JOIN diagnosis d ON d.visit_id = v.visit_id
    WHERE d.kcd_code LIKE 'E11%') AS 당뇨환자수,
   (SELECT COUNT(DISTINCT v.patient_id) FROM visit v
    JOIN lab l ON l.visit_id = v.visit_id
-   WHERE l.test_name = 'HbA1c') AS 검사받은환자수;
+   WHERE l.test_name = 'HbA1c'
+     AND v.patient_id IN (
+       SELECT v2.patient_id FROM visit v2
+       JOIN diagnosis d2 ON d2.visit_id = v2.visit_id
+       WHERE d2.kcd_code LIKE 'E11%')) AS 당뇨환자중검사자수;
 
 -- 판독문 LIKE 검색 — '경색'이 들어간 보고서
 SELECT img_id, modality, body_part, report
@@ -43,8 +47,9 @@ FROM imaging WHERE report LIKE '%경색%';
 -- --------------------------------------------------
 
 -- A1. 단위 환산
+-- ×18은 포도당에만 유효한 환산 — 검사명 조건을 반드시 함께
 SELECT lab_id, result_value AS mmol, ROUND(result_value * 18, 0) AS mgdl
-FROM lab WHERE unit = 'mmol/L';
+FROM lab WHERE test_name = 'Glucose' AND unit = 'mmol/L';
 
 -- A2. 채혈 시각 분포
 SELECT strftime('%H', collected_at) AS 시, COUNT(*) FROM lab GROUP BY 시 ORDER BY 시;

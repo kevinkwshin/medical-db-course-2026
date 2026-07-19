@@ -52,7 +52,7 @@ slides = [
             note="진단코드 기반 연구의 고전적 경고: <b>\"코드가 늘어난 것인가, 병이 늘어난 것인가?\"</b>"),
 
     qsql("결측의 왜곡 — '검사받은 사람만'의 평균이라는 것",
-         "SELECT\n  (SELECT COUNT(DISTINCT v.patient_id)\n   FROM visit v JOIN diagnosis d\n     ON d.visit_id = v.visit_id\n   WHERE d.kcd_code LIKE 'E11%') AS 당뇨환자수,\n  (SELECT COUNT(DISTINCT v.patient_id)\n   FROM visit v JOIN lab l\n     ON l.visit_id = v.visit_id\n   WHERE l.test_name = 'HbA1c') AS 검사받은환자수;",
+         "SELECT\n  (SELECT COUNT(DISTINCT v.patient_id)\n   FROM visit v JOIN diagnosis d\n     ON d.visit_id = v.visit_id\n   WHERE d.kcd_code LIKE 'E11%') AS 당뇨환자수,\n  (SELECT COUNT(DISTINCT v.patient_id)\n   FROM visit v JOIN lab l\n     ON l.visit_id = v.visit_id\n   WHERE l.test_name = 'HbA1c'\n     AND v.patient_id IN (\n       SELECT v2.patient_id\n       FROM visit v2 JOIN diagnosis d2\n         ON d2.visit_id = v2.visit_id\n       WHERE d2.kcd_code LIKE 'E11%'))\n    AS 당뇨환자중검사자수;",
          title="분모가 다르면 결론이 다르다",
          note="당뇨 환자 8명 중 HbA1c 검사자는 6명 — '평균 HbA1c 7.6%'는 <b>검사받은 6명의</b> 평균입니다. "
               "검사를 안 받은 2명(P007·P013)이 조절 양호자인지 추적 탈락자인지에 따라 해석이 뒤집힙니다. "

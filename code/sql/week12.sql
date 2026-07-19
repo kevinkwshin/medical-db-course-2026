@@ -69,8 +69,10 @@ SELECT COUNT(*) FROM patient p WHERE NOT EXISTS (
   WHERE v.patient_id = p.patient_id);
 
 -- A4. 진료과 평균 초과 재원
+-- 별칭(los)은 표준 SQL의 WHERE에서 쓸 수 없어 식을 반복한다
 SELECT v.visit_id, v.department,
   julianday(v.discharge_date)-julianday(v.visit_date) AS los
 FROM visit v WHERE v.visit_type='입원'
-  AND los > (SELECT AVG(julianday(v2.discharge_date)-julianday(v2.visit_date))
-             FROM visit v2 WHERE v2.visit_type='입원' AND v2.department = v.department);
+  AND julianday(v.discharge_date)-julianday(v.visit_date)
+      > (SELECT AVG(julianday(v2.discharge_date)-julianday(v2.visit_date))
+         FROM visit v2 WHERE v2.visit_type='입원' AND v2.department = v.department);

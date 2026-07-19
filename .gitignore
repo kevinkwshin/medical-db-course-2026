@@ -3,3 +3,4 @@
 # 시스템/빌드 부산물
 .DS_Store
 *.html
+.claude/

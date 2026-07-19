@@ -49,6 +49,7 @@ def run_sql(sql, max_rows=8, db=None):
     tmp.close()
     shutil.copy(src, tmp.name)          # 원본 보호: DML/DDL도 사본 위에서 실행
     con = sqlite3.connect(tmp.name)
+    con.execute("PRAGMA foreign_keys = ON")   # SQLite 기본값은 OFF — 노트북 준비 셀과 동일하게
     try:
         cur = con.cursor()
         stmts = [s.strip() for s in sql.split(";") if s.strip()]

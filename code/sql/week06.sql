@@ -53,7 +53,10 @@ FROM patient GROUP BY sex, 연령군 ORDER BY sex, 연령군;
 SELECT kcd_code, dx_name, COUNT(*) AS n FROM diagnosis GROUP BY kcd_code, dx_name ORDER BY n DESC;
 
 -- A2. 검사별 평균
-SELECT test_name, ROUND(AVG(result_value),2) AS 평균, COUNT(*) AS 건수 FROM lab GROUP BY test_name;
+-- COUNT(*)와 COUNT(result_value)를 함께 — 평균의 분모는 후자다
+SELECT test_name, ROUND(AVG(result_value),2) AS 평균,
+       COUNT(*) AS 전체건수, COUNT(result_value) AS 값있는건수
+FROM lab GROUP BY test_name;
 
 -- A3. 5회 이상 내원
 SELECT patient_id, COUNT(*) AS n FROM visit GROUP BY patient_id HAVING COUNT(*) >= 5 ORDER BY n DESC;

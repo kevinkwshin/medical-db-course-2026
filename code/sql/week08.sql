@@ -3,12 +3,16 @@
 -- 의료진을 위한 데이터베이스 · 미니 EMR (mini_emr.sqlite)
 -- ============================================================
 
--- 가상 환자 P051 등록
+-- 가상 환자 P051 등록 (재실행 시 PK 중복 에러 = 정상)
 INSERT INTO patient (patient_id, sex, birth_date, blood_type)
 VALUES ('P051', 'F', '1988-03-15', 'A+');
 
 -- 확인
 SELECT * FROM patient WHERE patient_id = 'P051';
+
+-- FK가 실제로 켜져 있는지 확인 — 존재하지 않는 내원(V9999)에 처방을 넣어 본다 (일부러 에러를 내는 데모 — 주석을 풀면 실행이 중단됩니다)
+-- INSERT INTO prescription (rx_id, visit_id, drug_code, drug_name, dose, duration_days)
+--     VALUES ('R9999', 'V9999', 'MET500', '메트포르민', '500mg', 30);
 
 -- ① 먼저 SELECT로 대상 확인
 SELECT lab_id, test_name, result_value FROM lab WHERE lab_id = 'L0044';
@@ -19,7 +23,7 @@ UPDATE lab SET result_value = 176 WHERE lab_id = 'L0044';
 -- ③ 결과 재확인
 SELECT lab_id, test_name, result_value FROM lab WHERE lab_id = 'L0044';
 
--- 감사로그 테이블과 정정 이력 남기기
+-- 감사로그 테이블과 정정 이력 남기기 (재실행하면 이력이 한 건씩 쌓임 — reset_db()로 초기화)
 CREATE TABLE IF NOT EXISTS lab_audit (
   audit_id INTEGER PRIMARY KEY,
   lab_id TEXT, old_value REAL, new_value REAL,
@@ -32,16 +36,16 @@ VALUES ('L0044', 167, 176, 'S001', '2026-04-02 09:30', '재검 결과 반영');
 SELECT * FROM lab_audit;
 
 -- [연습 Q1] P051의 외래 내원 한 건을 visit에 INSERT 하라 (visit_id는 'V0101' 등 새 값)
--- 여기에 SQL을 작성하세요;
+-- 여기에 SQL을 작성하세요
 
--- [연습 Q2] P051의 혈액형을 B+로 정정하라 (SELECT → UPDATE → SELECT 3단계로)
--- 여기에 SQL을 작성하세요;
+-- [연습 Q2] P051의 혈액형을 B+로 정정하라 — 먼저 q()로 SELECT 확인 후, 이 셀에서 UPDATE
+-- 여기에 SQL을 작성하세요
 
--- [연습 Q3] (사본이니 안심하고) WHERE 없는 UPDATE를 실행해 피해 규모를 확인한 뒤, 데이터를 다시 내려받아 복구하라
--- 여기에 SQL을 작성하세요;
+-- [연습 Q3] WHERE 없는 UPDATE를 실행해 피해 규모를 q()로 확인한 뒤, reset_db()로 복구하라
+-- 여기에 SQL을 작성하세요
 
 -- [연습 Q4] lab_audit에 '단위 오입력 정정' 이력을 한 건 더 남겨 보라
--- 여기에 SQL을 작성하세요;
+-- 여기에 SQL을 작성하세요
 
 -- --------------------------------------------------
 -- 연습문제 정답

@@ -59,11 +59,12 @@ END</pre></div>
               "최장 35일 입원(대퇴골 골절 환자)이 평균을 끌어올리고 있죠 — 평균만 보면 놓치는 것들."),
 
     qsql("검사 결과 중 정상범위를 벗어난 비율은 몇 %인가?",
-         "SELECT COUNT(*) AS 전체검사,\n  SUM(CASE WHEN result_value > ref_high\n            OR result_value < ref_low\n           THEN 1 ELSE 0 END) AS 이상건수,\n  ROUND(100.0 * SUM(CASE WHEN result_value > ref_high\n            OR result_value < ref_low\n           THEN 1 ELSE 0 END) / COUNT(*), 1)\n    AS 이상비율\nFROM lab;",
+         "SELECT COUNT(*) AS 전체검사,\n  COUNT(result_value) AS 판정가능,\n  SUM(CASE WHEN result_value > ref_high\n            OR result_value < ref_low\n           THEN 1 ELSE 0 END) AS 이상건수,\n  ROUND(100.0 * SUM(CASE WHEN result_value > ref_high\n            OR result_value < ref_low\n           THEN 1 ELSE 0 END)\n    / COUNT(result_value), 1) AS 이상비율\nFROM lab;",
          title="CASE × 집계 — 비율 구하기",
          tag="대표 질문",
-         note="<b>CASE로 1/0 플래그를 만들고 SUM으로 세는</b> 패턴 — 유병률, 달성률, 이상률 계산의 "
-              "기본 조합입니다. 100.0의 <b>.0</b>이 없으면 정수 나눗셈이 되어 0이 나옵니다."),
+         note="<b>CASE로 1/0 플래그를 만들고 SUM으로 세는</b> 패턴 — 유병률, 달성률, 이상률 계산의 기본 조합. "
+              "분모는 COUNT(*)가 아니라 <b>판정 가능한 검사(COUNT(result_value))</b> — 결과값 NULL을 "
+              "분모에 넣으면 결측이 '정상'처럼 계산됩니다. 100.0의 .0이 없으면 정수 나눗셈이 되어 0이 나옵니다."),
 
     qsql("COUNT(*) vs COUNT(컬럼) — NULL이 끼어들면?",
          "SELECT COUNT(*) AS 전체행수,\n       COUNT(result_value) AS 값있는행수,\n       COUNT(*) - COUNT(result_value)\n         AS 결측행수\nFROM lab;",
