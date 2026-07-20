@@ -127,8 +127,7 @@ slides = [
          ["<span class='mono'>vital</span> 활력징후", "혈압·맥박·체온·SpO2·측정시각", "149", "visit_id, measured_at"],
          ["<span class='mono'>staff</span> 의료진", "직종·진료과", "21", "staff_id"],
          ["<span class='mono'>imaging</span> 영상", "촬영종류·부위·판독문", "21", "visit_id, modality"]],
-        small=True,
-        note="왜 환자 이름이 없을까요? — 14주차(개인정보보호·가명처리)에서 다시 이야기합니다."),
+        small=True),
 
     qsql("미리보기: 우리 데이터셋의 환자 5명을 꺼내 봅시다",
          "SELECT *\nFROM patient\nLIMIT 5;",
@@ -150,5 +149,5 @@ slides = [
              "병원 데이터는 EMR·LIS·PACS 등에 <b>흩어져</b> 있고, 연구는 CDW에서 시작된다",
              "파일 관리의 중복·불일치 문제를 해결하는 것이 <b>DBMS</b>",
              "실습은 <b>미니 EMR 하나로</b> 15주 전체 진행 — 8개 테이블 구조는 명세서(A4 배포물) 참조"],
-            next_week="관계형 데이터베이스의 기본 구조 — 테이블, 키(Key), 그리고 \"주민번호를 PK로 쓰면 안 되는 이유\""),
+            next_week="관계형 데이터베이스의 기본 구조 — 테이블과 키(Key), 그리고 NULL의 의미"),
 ]

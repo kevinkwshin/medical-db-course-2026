@@ -170,7 +170,7 @@ push 후 학생에게는 실습안내.md 링크만 공지하면 됩니다. 노�
 def syllabus():
     rows = [
         ["1", "데이터베이스 개론 — 의료데이터의 세계", "데이터vs정보(혈압 120/80) · 정형/비정형 · EMR·LIS·PACS·CDW 지도 · 미니 EMR 소개", "첫 SQL 데모"],
-        ["2", "관계형 DB의 뼈대", "테이블 해부 · 1:N 계층 · PK/FK · 주민번호 PK 금지 · NULL의 의미", "키 찾기"],
+        ["2", "관계형 DB의 기본 구조", "테이블 구성 · 1:N 계층 · PK/FK·대리키 · NULL의 의미", "키 찾기"],
         ["3", "SELECT ①", "SELECT·FROM · 별칭 · DISTINCT · ORDER BY · LIMIT", "\"어떤 진료과가 있나?\""],
         ["4", "SELECT ② WHERE", "비교·논리연산 · BETWEEN·IN·LIKE · IS NULL · 날짜 조건", "\"65세 이상 여성은?\" \"I코드 진단은?\""],
         ["5", "SELECT ③ 계산·집계", "산술식(재원일수) · CASE(혈압 분류) · COUNT/AVG/MIN/MAX · NULL과 집계", "\"평균 재원일수는?\" \"검사 이상 비율은?\""],
