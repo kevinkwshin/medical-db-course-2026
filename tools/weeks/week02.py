@@ -23,9 +23,10 @@ slides = [
         <tr><td>P003</td><td>F</td><td>1942-12-27</td><td>A+</td></tr>
         <tr style="color:#94a3b8"><td colspan="4">… (총 50행)</td></tr></tbody></table></div>
         <div class="side">
-        <p><span class="pill">속성 Attribute</span> 세로 열. 컬럼·필드라고도 부름 → 이 테이블은 4개 (<b>디그리</b> = 4)</p>
-        <p><span class="pill">튜플 Tuple</span> 가로 행. 레코드라고도 부름 → 환자 한 명 = 한 행 (<b>카디널리티</b> = 50)</p>
+        <p><span class="pill">속성 Attribute</span> 세로 열. 컬럼·필드라고도 부름 → 이 테이블은 4개</p>
+        <p><span class="pill">튜플 Tuple</span> 가로 행. 레코드라고도 부름 → 환자 한 명 = 한 행 (50행)</p>
         <p><span class="pill">도메인 Domain</span> 속성이 가질 수 있는 값의 범위 → sex는 {'M','F'}, blood_type은 8가지</p>
+        <p style="font-size:15px;color:#94a3b8">참고: 속성 수를 디그리, 행 수를 카디널리티라고도 부릅니다.</p>
         </div></div>""",
         tag="용어"),
 
@@ -103,8 +104,8 @@ slides = [
 
     bullets("스키마 — 구조를 먼저 약속한다",
             [("스키마(Schema)", "테이블·컬럼·타입·제약조건의 설계도. 데이터보다 먼저 정의된다"),
-             ("외부/개념/내부의 3계층", "사용자가 보는 화면 ↔ 병원 전체의 논리 구조 ↔ 디스크 저장 방식"),
-             ("데이터 독립성", "저장 방식이 바뀌어도(디스크→클라우드) 쿼리는 그대로 — 계층 분리의 힘")],
+             ("데이터 독립성", "저장 방식이 바뀌어도(디스크→클라우드) 쿼리는 그대로 — 구조와 저장의 분리"),
+             ("스키마 확인", "<span class='mono'>SELECT * FROM sqlite_master</span> — DB에 저장된 설계도를 직접 조회할 수 있다")],
             note="7주차에 여러분이 직접 스키마를 정의(CREATE TABLE)합니다. "
                  "그때 오늘 배운 PK·FK·NULL 규칙이 전부 문법으로 다시 등장합니다."),
 

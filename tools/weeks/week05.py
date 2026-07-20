@@ -22,6 +22,14 @@ slides = [
               "<span class='mono'>julianday()</span> 차이로 구합니다(일 단위). "
               "LOS(Length of Stay, 재원일수)는 병원 운영·연구의 기본 지표."),
 
+    qsql("환자 나이를 계산하라 (2026년 기준 연 나이)",
+         "SELECT patient_id, birth_date,\n       2026 - CAST(substr(birth_date,1,4) AS INT)\n         AS age\nFROM patient\nORDER BY age DESC\nLIMIT 5;",
+         max_rows=5,
+         title="문자열에서 계산으로 — substr과 CAST",
+         note="지난주 예고한 식입니다. <span class='mono'>substr(birth_date,1,4)</span>가 'YYYY-MM-DD'에서 "
+              "앞 4글자(연도)를 자르고, <span class='mono'>CAST(… AS INT)</span>가 문자를 숫자로 바꿔 뺄셈을 "
+              "가능하게 합니다. 생일 미도래를 무시하는 <b>연 나이 근사</b>입니다."),
+
     qsql("검사 결과가 정상 상한을 몇 배나 초과했나?",
          "SELECT test_name, result_value, ref_high,\n       ROUND(result_value / ref_high, 2)\n         AS ratio\nFROM lab\nWHERE test_name = 'CRP'\nORDER BY ratio DESC;",
          max_rows=5,
@@ -43,14 +51,14 @@ END</pre></div>
         <li>즉, <b>가이드라인의 분류표를 코드로</b> 옮기는 문법</li></ul></div></div>""",
         tag="문법"),
 
-    qsql("활력징후의 혈압을 정상 · 주의 · 고혈압으로 분류하라",
-         "SELECT visit_id, sbp, dbp,\n  CASE\n    WHEN sbp >= 140 OR dbp >= 90  THEN '고혈압'\n    WHEN sbp >= 120               THEN '주의'\n    ELSE '정상'\n  END AS bp_grade\nFROM vital\nORDER BY sbp DESC;",
+    qsql("혈압 측정치를 세 구간으로 분류하라",
+         "SELECT visit_id, sbp, dbp,\n  CASE\n    WHEN sbp >= 140 OR dbp >= 90  THEN '고혈압 범위'\n    WHEN sbp >= 120               THEN '주의 범위'\n    ELSE '정상 범위'\n  END AS bp_range\nFROM vital\nORDER BY sbp DESC;",
          max_rows=6,
-         title="CASE 실전 — 혈압 분류",
+         title="CASE 실전 — 측정치 구간 분류",
          tag="대표 질문",
-         note="WHEN은 <b>위에서부터 차례로</b> 평가되고 먼저 맞은 조건에서 멈춥니다 — "
-              "분류 기준의 순서가 곧 로직입니다. 분류 기준(140/90)을 바꾸면 "
-              "연구 결과도 바뀝니다: 기준 명시가 왜 중요한지 보이는 대목."),
+         note="라벨이 '고혈압'이 아니라 <b>'고혈압 범위'</b>인 이유 — 측정 1회의 구간 분류일 뿐 진단이 "
+              "아니기 때문입니다(구간 경계도 예시). WHEN은 <b>위에서부터 차례로</b> 평가되어 먼저 맞은 "
+              "조건에서 멈춥니다 — 분류 기준의 순서와 경계값이 곧 로직이고, 이를 바꾸면 연구 결과도 바뀝니다."),
 
     qsql("우리 병원 전체 요약: 내원 건수, 평균 재원일수, 최장 입원",
          "SELECT COUNT(*) AS 입원건수,\n       ROUND(AVG(julianday(discharge_date)\n         - julianday(visit_date)), 1) AS 평균재원일,\n       MAX(julianday(discharge_date)\n         - julianday(visit_date)) AS 최장재원일\nFROM visit\nWHERE visit_type = '입원';",

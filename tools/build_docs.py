@@ -105,7 +105,7 @@ def spec():
 ["<span class='mono'>test_name</span>", "TEXT", "검사명 (HbA1c·Glucose·Creatinine·Hemoglobin·LDL·CRP)"],
 ["<span class='mono'>result_value</span>", "REAL", "결과값 — <b>NULL은 '결과 미산출'</b>(검체 용혈 등)"],
 ["<span class='mono'>unit</span>", "TEXT", "단위 (%·mg/dL·g/dL·mg/L …)"],
-["<span class='mono'>ref_low / ref_high</span>", "REAL", "정상 참고범위 하한/상한"],
+["<span class='mono'>ref_low / ref_high</span>", "REAL", "정상 참고범위 하한/상한 (교육용 단일 범위 — 실제는 성별·연령·기관별로 다름)"],
 ["<span class='mono'>collected_at</span>", "DATETIME", "채혈 시각"]])}
 
 <h2>vital — 활력징후 (149행) — 복합 PK (visit_id, measured_at)</h2>

@@ -75,12 +75,13 @@ slides = [
          note="논문의 Table 1(연구대상자 특성표)은 결국 <b>CASE로 범주를 만들고 GROUP BY로 세는 것</b>의 반복입니다. "
               "13주차에 코호트 전용 Table 1을 완성합니다."),
 
-    qsql("진료과별로 '고혈압(sbp≥140) 측정 비율'까지 — 종합 연습",
-         "SELECT v.department,\n       COUNT(*) AS 측정수,\n       ROUND(100.0 * SUM(CASE WHEN t.sbp >= 140\n         THEN 1 ELSE 0 END) / COUNT(*), 1)\n         AS 고혈압비율\nFROM vital t, visit v\nWHERE t.visit_id = v.visit_id\nGROUP BY v.department\nORDER BY 고혈압비율 DESC;",
-         title="지난 3주의 총결산 — 필터 × CASE × 집계 × 그룹",
-         note="<span class='mono'>FROM vital t, visit v</span> + WHERE 연결은 <b>암시적 조인</b> — "
-              "11주차에 배울 <span class='mono'>JOIN … ON</span>과 동작이 같습니다. "
-              "WHERE·CASE·SUM·GROUP BY가 한 쿼리에 모두 들어간 형태로, 중간고사 최고 난도 수준입니다."),
+    qsql("진료과별로 '고혈압 범위(sbp≥140) 측정 비율'까지 — 두 테이블 미리보기",
+         "SELECT v.department,\n       COUNT(*) AS 측정수,\n       ROUND(100.0 * SUM(CASE WHEN t.sbp >= 140\n         THEN 1 ELSE 0 END) / COUNT(*), 1)\n         AS 고혈압범위비율\nFROM vital t, visit v\nWHERE t.visit_id = v.visit_id\nGROUP BY v.department\nORDER BY 고혈압범위비율 DESC;",
+         title="CASE × 집계 × 그룹 총결산 — 11주차 미리보기",
+         tag="미리보기",
+         note="<span class='mono'>FROM vital t, visit v</span> + WHERE 연결은 두 테이블을 잇는 "
+              "<b>암시적 조인</b>으로, 11주차에 정식 문법(JOIN … ON)으로 배웁니다. 오늘은 "
+              "CASE·SUM·GROUP BY가 한 쿼리에 모이는 <b>구조만</b> 눈에 담아두면 됩니다."),
 
     html_slide("연습문제",
         """<ul class="big">

@@ -8,11 +8,16 @@ SELECT visit_id, visit_date, discharge_date,
        julianday(discharge_date) - julianday(visit_date) AS los
 FROM visit WHERE visit_type = '입원' ORDER BY los DESC LIMIT 8;
 
--- 정상/주의/고혈압
+-- 나이 계산 — substr(연도 자르기) + CAST(숫자 변환), 연 나이 근사
+SELECT patient_id, birth_date,
+       2026 - CAST(substr(birth_date,1,4) AS INT) AS age
+FROM patient ORDER BY age DESC LIMIT 5;
+
+-- 혈압 측정치 3구간 (측정 1회의 구간 분류 — 진단 아님, 경계값은 예시)
 SELECT visit_id, sbp, dbp,
-  CASE WHEN sbp >= 140 OR dbp >= 90 THEN '고혈압'
-       WHEN sbp >= 120 THEN '주의'
-       ELSE '정상' END AS bp_grade
+  CASE WHEN sbp >= 140 OR dbp >= 90 THEN '고혈압 범위'
+       WHEN sbp >= 120 THEN '주의 범위'
+       ELSE '정상 범위' END AS bp_range
 FROM vital ORDER BY sbp DESC LIMIT 10;
 
 -- 입원 요약: 건수·평균·최장

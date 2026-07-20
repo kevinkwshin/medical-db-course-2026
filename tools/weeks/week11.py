@@ -36,14 +36,22 @@ slides = [
               "<span class='mono'>v, p</span>는 테이블 별칭. "
               "같은 이름의 컬럼이 양쪽에 있으니 <b>어느 테이블의 컬럼인지 항상 명시</b>하는 습관을."),
 
-    qsql("당뇨(E11) 환자들의 HbA1c 결과를 보려면? — 4개 테이블 연결",
+    qsql("당뇨 진단이 붙은 '바로 그 내원'의 HbA1c 결과는?",
+         "SELECT d.kcd_code, l.test_name,\n       l.result_value, l.collected_at\nFROM diagnosis d\nJOIN lab l\n  ON l.visit_id = d.visit_id\nWHERE d.kcd_code LIKE 'E11%'\n  AND l.test_name = 'HbA1c'\nORDER BY l.collected_at;",
+         max_rows=6,
+         title="한 단계씩 ① — 같은 내원 안에서 잇기",
+         note="진단과 검사가 <b>같은 내원(visit_id)</b>에서 이뤄진 경우만 잡힙니다. "
+              "그런데 진단은 이번 내원에, 검사는 두 달 전 다른 내원에 있다면? — 이 쿼리는 놓칩니다. "
+              "다음 슬라이드에서 '같은 환자의 모든 내원'으로 확장합니다."),
+
+    qsql("당뇨(E11) 환자의 모든 HbA1c 결과를 보려면? — 환자 단위로 확장",
          "SELECT DISTINCT v.patient_id,\n       l.result_value AS hba1c,\n       l.collected_at\nFROM diagnosis d\nJOIN visit v  ON d.visit_id = v.visit_id\nJOIN visit v2 ON v2.patient_id = v.patient_id\nJOIN lab l    ON l.visit_id = v2.visit_id\nWHERE d.kcd_code LIKE 'E11%'\n  AND l.test_name = 'HbA1c'\nORDER BY v.patient_id, l.collected_at;",
          max_rows=6,
-         title="다중 JOIN — 대표 질문 풀기",
+         title="한 단계씩 ② — 환자 단위로 확장",
          tag="대표 질문",
-         note="진단은 이번 내원에, 검사는 다른 내원에 있을 수 있어 visit을 두 번 통과했습니다"
-              "(같은 환자의 모든 내원으로 확장). JOIN은 체인처럼 이어 붙이면 됩니다 — "
-              "<b>ERD를 보며 열쇠의 경로를 따라가는 것</b>이 요령."),
+         note="visit이 <b>두 번</b> 등장합니다: v는 '진단이 달린 내원', v2는 '같은 환자의 모든 내원'. "
+              "①에서 놓친 다른 내원의 검사까지 잡힙니다. 다중 JOIN은 이렇게 <b>ERD의 열쇠 경로를 "
+              "한 칸씩</b> 이어 붙이는 것입니다."),
 
     versus("INNER JOIN vs LEFT JOIN — 짝이 없는 행의 운명",
            "INNER JOIN", [

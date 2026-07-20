@@ -28,13 +28,15 @@ slides = [
          note="날짜를 'YYYY-MM-DD' 형식으로 저장하면 문자열 비교가 곧 시간 순서가 됩니다. "
               "<b>형식 통일이 무너지면</b>(01/12/2024 vs 2024-12-01) 이 비교 전체가 무너집니다 — 14주차 주제."),
 
-    qsql("65세 이상 여성 환자는? (2026년 기준 연 나이)",
-         "SELECT patient_id, sex, birth_date,\n       2026 - CAST(substr(birth_date,1,4) AS INT) AS age\nFROM patient\nWHERE sex = 'F'\n  AND 2026 - CAST(substr(birth_date,1,4) AS INT) >= 65;",
+    qsql("65세 이상 여성 환자는? — 2026년 기준 65세 이상 = 1961년 이전 출생",
+         "SELECT patient_id, sex, birth_date\nFROM patient\nWHERE sex = 'F'\n  AND birth_date <= '1961-12-31'\nORDER BY birth_date;",
          max_rows=6,
          title="AND — 두 조건 모두 만족",
          tag="대표 질문",
-         note="substr으로 출생연도를 잘라 연 나이를 계산했습니다(간단하지만 생일 미도래를 무시하는 '연 나이'라는 한계 있음). "
-              "연구에서는 <b>어느 시점의 나이인가</b>(index date 기준)가 늘 쟁점입니다 — 13주차에서 다시."),
+         note="나이 조건을 <b>출생연도 조건으로 바꿔</b> 풀면 배운 문법만으로 충분합니다. "
+              "나이를 직접 계산하는 식(<span class='mono'>2026 - CAST(substr(birth_date,1,4) AS INT)</span>)은 "
+              "다음 주 계산 단원에서 다룹니다. 연구에서는 <b>어느 시점의 나이인가</b>(index date 기준)가 "
+              "늘 쟁점입니다 — 13주차에서 다시."),
 
     qsql("응급 또는 입원으로 온 내원은?",
          "SELECT visit_id, visit_date,\n       department, visit_type\nFROM visit\nWHERE visit_type = '응급'\n   OR visit_type = '입원'\nORDER BY visit_date DESC;",

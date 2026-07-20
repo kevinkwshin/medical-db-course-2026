@@ -50,7 +50,7 @@ slides = [
         """<table class="info">
         <thead><tr><th style="width:18%">단계</th><th>예시</th><th style="width:34%">누가/무엇이 하나</th></tr></thead>
         <tbody>
-        <tr><td><b>데이터</b></td><td>P003 환자의 HbA1c = 8.9%</td><td>검사장비 → LIS 저장</td></tr>
+        <tr><td><b>데이터</b></td><td>P010 환자의 HbA1c = 9.5%</td><td>검사장비 → LIS 저장</td></tr>
         <tr><td><b>정보</b></td><td>"최근 3회 연속 목표치 초과" (목표치 7.0%는 예시 — 실제 목표는 환자별로 다름)</td><td>SQL 질의로 추세 집계</td></tr>
         <tr><td><b>지식</b></td><td>"추가 임상 평가가 필요한 환자군에 해당"</td><td>임상 지식 + 가이드라인</td></tr>
         <tr><td><b>결정</b></td><td>치료 조정 여부 판단 — 다른 임상 정보와 함께 의료진이 결정</td><td>의료진</td></tr>
@@ -111,9 +111,47 @@ slides = [
             note="관계형 DBMS는 1970년 제안(E. F. Codd) 이후 표준으로 자리잡았고, "
                  "병원의 핵심 임상·원무 데이터는 여전히 <b>관계형 DB</b> 중심입니다."),
 
-    img_slide("한 학기 동안 함께할 데이터: 미니 EMR", "../mini_emr/ERD.png",
-              note="가상 환자 50명, 내원 100건, 8개 테이블. 병원 데이터에서 흔히 나타나는 "
-                   "환자–내원–진료기록 관계를 단순화한 교육용 데이터셋입니다. <b>모든 데이터는 가상입니다.</b>",
+    html_slide("미니 EMR — 핵심 구조 먼저",
+        """<div style="flex:1; display:flex; align-items:center; justify-content:center">
+        <svg width="1050" height="470" viewBox="0 0 1050 470">
+        <rect x="20" y="170" width="230" height="110" rx="12" fill="#eff6ff" stroke="#1e3a5f" stroke-width="2.5"/>
+        <text x="135" y="218" text-anchor="middle" font-size="30" font-weight="800" fill="#1e3a5f">환자</text>
+        <text x="135" y="252" text-anchor="middle" font-size="17" fill="#475569">patient · 50명</text>
+        <rect x="410" y="170" width="230" height="110" rx="12" fill="#eff6ff" stroke="#1e3a5f" stroke-width="2.5"/>
+        <text x="525" y="218" text-anchor="middle" font-size="30" font-weight="800" fill="#1e3a5f">내원</text>
+        <text x="525" y="252" text-anchor="middle" font-size="17" fill="#475569">visit · 100건</text>
+        <line x1="250" y1="225" x2="410" y2="225" stroke="#475569" stroke-width="2.5"/>
+        <text x="268" y="212" font-size="20" font-weight="700" fill="#475569">1</text>
+        <text x="382" y="212" font-size="20" font-weight="700" fill="#475569">N</text>
+        <g font-size="22" font-weight="700" fill="#0e7490">
+        <rect x="810" y="20" width="220" height="70" rx="10" fill="#f0fdfa" stroke="#0e7490" stroke-width="2"/>
+        <text x="920" y="63" text-anchor="middle">진단 diagnosis</text>
+        <rect x="810" y="115" width="220" height="70" rx="10" fill="#f0fdfa" stroke="#0e7490" stroke-width="2"/>
+        <text x="920" y="158" text-anchor="middle">처방 prescription</text>
+        <rect x="810" y="210" width="220" height="70" rx="10" fill="#f0fdfa" stroke="#0e7490" stroke-width="2"/>
+        <text x="920" y="253" text-anchor="middle">검사 lab</text>
+        <rect x="810" y="305" width="220" height="70" rx="10" fill="#f0fdfa" stroke="#0e7490" stroke-width="2"/>
+        <text x="920" y="348" text-anchor="middle">활력징후 vital</text>
+        <rect x="810" y="400" width="220" height="70" rx="10" fill="#f0fdfa" stroke="#0e7490" stroke-width="2"/>
+        <text x="920" y="443" text-anchor="middle">영상 imaging</text>
+        </g>
+        <g stroke="#94a3b8" stroke-width="2" fill="none">
+        <path d="M640,210 C730,180 730,70 810,55"/>
+        <path d="M640,220 C730,205 730,150 810,150"/>
+        <path d="M640,230 C730,235 730,245 810,245"/>
+        <path d="M640,245 C730,280 730,335 810,340"/>
+        <path d="M640,255 C730,320 730,430 810,435"/>
+        </g>
+        <text x="655" y="200" font-size="19" font-weight="700" fill="#475569">1</text>
+        <text x="785" y="250" font-size="19" font-weight="700" fill="#475569">N</text>
+        </svg></div>
+        <div class="note">구조는 이 한 문장이 전부입니다: <b>환자 1명이 여러 번 내원하고, 내원마다 진료기록(진단·처방·검사·활력징후·영상)이 달린다.</b>
+        모든 진료기록은 내원ID로, 모든 내원은 환자ID로 연결됩니다.</div>""",
+        tag="미니 EMR"),
+
+    img_slide("미니 EMR — 전체 ERD (컬럼 수준)", "../mini_emr/ERD.png",
+              note="컬럼 수준 세부는 배포된 <b>데이터셋 명세서(A4)</b>에 있습니다 — 외울 필요 없이 "
+                   "매주 옆에 두고 참조하면 됩니다. <b>모든 데이터는 가상입니다.</b>",
               tag="미니 EMR"),
 
     table_slide("미니 EMR 8개 테이블 요약",

@@ -16,7 +16,14 @@ JOIN patient p ON v.patient_id = p.patient_id
 JOIN staff s ON v.attending_id = s.staff_id
 WHERE v.visit_type = '입원' ORDER BY v.visit_date DESC LIMIT 8;
 
--- 당뇨(E11) 환자의 모든 HbA1c 결과
+-- ① 같은 내원 안에서: 당뇨 진단이 붙은 그 내원의 HbA1c
+SELECT d.kcd_code, l.test_name, l.result_value, l.collected_at
+FROM diagnosis d
+JOIN lab l ON l.visit_id = d.visit_id
+WHERE d.kcd_code LIKE 'E11%' AND l.test_name = 'HbA1c'
+ORDER BY l.collected_at;
+
+-- ② 환자 단위로 확장: 당뇨(E11) 환자의 모든 HbA1c 결과
 SELECT DISTINCT v.patient_id, l.result_value AS hba1c, l.collected_at
 FROM diagnosis d
 JOIN visit v  ON d.visit_id = v.visit_id

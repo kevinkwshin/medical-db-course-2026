@@ -10,12 +10,12 @@ SELECT patient_id, sex, birth_date FROM patient WHERE sex = 'F' LIMIT 8;
 SELECT patient_id, birth_date FROM patient
 WHERE birth_date < '1950-01-01' ORDER BY birth_date;
 
--- 65세 이상 여성 (2026년 기준 연 나이)
-SELECT patient_id, sex, birth_date,
-       2026 - CAST(substr(birth_date,1,4) AS INT) AS age
+-- 65세 이상 여성 — 나이 조건을 출생연도 조건으로 (2026년 기준 65세 이상 = 1961년 이전 출생)
+SELECT patient_id, sex, birth_date
 FROM patient
 WHERE sex = 'F'
-  AND 2026 - CAST(substr(birth_date,1,4) AS INT) >= 65;
+  AND birth_date <= '1961-12-31'
+ORDER BY birth_date;
 
 -- 응급 또는 입원 (IN)
 SELECT visit_id, visit_date, visit_type FROM visit
