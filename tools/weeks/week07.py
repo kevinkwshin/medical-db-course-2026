@@ -19,7 +19,8 @@ slides = [
         [["INTEGER", "정수", "투약일수, 혈압, 맥박", "—"],
          ["REAL", "소수", "검사 결과값, 체온", "TEXT로 넣으면 <b>평균·비교가 문자 기준</b>으로 왜곡"],
          ["TEXT", "문자열", "진단명, 판독문, ID", "숫자를 TEXT로: '9' &gt; '10' 이 참이 되는 사고"],
-         ["DATE / DATETIME", "날짜·시각", "내원일, 채혈시각", "형식 제각각이면 기간 필터 전멸 (14주차)"]],
+         ["DATE / DATETIME", "날짜·시각", "내원일, 채혈시각",
+          "SQLite는 날짜 형식을 강제하지 않음(문자열 저장) — 'YYYY-MM-DD' 통일은 규칙으로 지켜야 (14주차)"]],
         note="검사값을 REAL로 선언하는 순간 '결과값엔 숫자만'이라는 <b>규칙이 구조에 새겨집니다</b>. "
              "타입은 첫 번째 데이터 검증 장치입니다.",
         tag="타입"),
@@ -46,7 +47,8 @@ slides = [
          ["<b>CHECK</b>", "조건을 만족하는 값만", "성별은 M/F만, SpO2는 0~100만"],
          ["<b>FOREIGN KEY</b>", "NULL이 아니면 부모에 존재하는 값만", "없는 환자·없는 내원에 기록 못 달게 (2주차)"]],
         note="<b>제약조건(constraint)</b>: 컬럼·테이블에 선언하는 입력 규칙. 위반하면 "
-             "'constraint failed' 에러와 함께 <b>문장 전체가 거부</b>되어 부분 입력이 남지 않습니다."),
+             "'constraint failed' 에러와 함께 <b>해당 문장만 거부</b>됩니다 — 여러 문장 중 앞서 성공한 것은 "
+             "유지되며, 묶음 전체를 취소하려면 트랜잭션(8주차)이 필요합니다."),
 
     qsql("CHECK가 일하는 순간: SpO2에 250을 입력해 본다면?",
          "CREATE TABLE vital_demo (\n  visit_id TEXT,\n  spo2 INTEGER CHECK (spo2 BETWEEN 0 AND 100)\n);\nINSERT INTO vital_demo VALUES ('V0001', 250);",
@@ -66,7 +68,7 @@ ALTER TABLE patient RENAME COLUMN smoking TO smoking_status;
 -- 테이블 삭제 (구조와 데이터 모두 소멸!)
 DROP TABLE vital_demo;""",
          note="DROP은 되돌릴 수 없습니다. 참조하는 자식 테이블이 있으면 삭제가 거부되는 것도 "
-              "참조 무결성의 보호막입니다. <b>운영 DB에서 DROP은 결재 문서와 함께 움직이는 명령</b>입니다.",
+              "참조 무결성의 보호막입니다. 운영 환경에서는 DROP 권한 자체를 별도 승인 절차로 제한하는 것이 일반적입니다.",
          tag="DDL"),
 
     two_col("테이블 설계 = 연구 설계다",
@@ -116,7 +118,7 @@ DROP TABLE vital_demo;""",
             ["타입 선택이 첫 번째 검증: <b>검사값은 REAL, 날짜는 통일된 DATE</b>",
              "제약조건 5총사(PK · NOT NULL · UNIQUE · CHECK · FK) = <b>입력 사고의 사전 차단</b>",
              "DROP은 비가역 — 참조 무결성이 실수를 한 번은 막아준다",
-             "<b>CRF → 스키마</b> 번역 능력이 곧 연구 데이터 품질"],
+             "<b>CRF → 스키마</b> 번역이 연구 데이터 품질 관리의 출발점"],
             homework="'내 연구 코호트 테이블' CREATE TABLE 문 제출 (제약조건 사유 주석 포함)",
             next_week="INSERT·UPDATE·DELETE — 그리고 의무기록은 왜 진짜로 지우지 않는가"),
 ]

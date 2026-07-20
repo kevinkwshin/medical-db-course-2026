@@ -86,7 +86,7 @@ slides = [
          max_rows=6,
          title="3테이블 JOIN — 환자 + 내원 + 의료진",
          note="연결 경로: visit→patient는 patient_id로, visit→staff는 attending_id로 — <b>한 번에 한 열쇠씩</b>. "
-              "ON 조건을 빠뜨리면 모든 행의 조합(<b>카티전 곱</b>)이 생겨 결과가 폭발하니 주의."),
+              "ON 조건을 빠뜨리면 모든 행의 조합(<b>카티전 곱</b>)이 생겨 행 수가 급격히 늘어나니 주의."),
 
     html_slide("연습문제",
         """<ul class="big">

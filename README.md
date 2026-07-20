@@ -1,5 +1,7 @@
 # 의료진을 위한 데이터베이스
 
+![checks](https://github.com/kevinkwshin/medical-db-course-2026/actions/workflows/checks.yml/badge.svg)
+
 15주 SQL 실습형 강의 자료. 학기 내내 미니 EMR(가상 환자 50명, 8개 테이블) 하나로 실습하며, 슬라이드의 모든 SQL 결과는 실제 데이터를 실행한 것입니다.
 
 수강생은 [실습안내.md](실습안내.md)를 보면 됩니다.

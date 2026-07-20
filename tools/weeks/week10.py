@@ -124,8 +124,8 @@ slides = [
         <li>measurement ≈ lab·vital</li></ul>
         <p style="margin-top:8px">미니 EMR은 OMOP의 <b>축소 모형</b>으로 설계되었습니다.</p></div></div>
         <div class="note">공식 명칭: <b>OMOP Common Data Model</b> — OHDSI(Observational Health Data
-        Sciences and Informatics, 국제 관찰형 보건데이터 컨소시엄)의 표준. 국내 다수 대형병원이 변환을 완료했으며,
-        공개 문서(ohdsi.org)에서 전체 테이블 정의를 볼 수 있습니다.</div>""",
+        Sciences and Informatics, 국제 관찰형 보건데이터 컨소시엄)의 표준. 국내 여러 대형병원도 변환에
+        참여하고 있으며, 공개 문서(ohdsi.org)에서 전체 테이블 정의를 볼 수 있습니다.</div>""",
         tag="OMOP CDM"),
 
     html_slide("연습문제 — 손으로 그리는 과제",

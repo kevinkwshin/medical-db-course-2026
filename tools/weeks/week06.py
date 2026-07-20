@@ -47,7 +47,7 @@ slides = [
          max_rows=7,
          title="날짜 함수 × GROUP BY",
          note="<span class='mono'>strftime('%Y-%m', …)</span>으로 '연-월'만 뽑아 묶으면 월별 통계. "
-              "감염병 유행 곡선, 계절성 분석이 전부 이 문형입니다."),
+              "감염병 유행 곡선, 계절성 분석도 이 문형에서 출발합니다."),
 
     qsql("10건 이상 처방된 약물만 보여줘",
          "SELECT drug_name,\n       COUNT(*) AS 처방건수\nFROM prescription\nGROUP BY drug_name\nHAVING COUNT(*) >= 10\nORDER BY 처방건수 DESC;",
@@ -100,7 +100,7 @@ slides = [
          ["HAVING", "집계가 끝난 그룹에 거는 조건 (WHERE는 집계 전 행에)"],
          ["COUNT(DISTINCT x)", "중복을 빼고 센 개수 — '내원 수'가 아닌 '사람 수'를 셀 때"],
          ["strftime()", "날짜에서 원하는 부분을 추출하는 SQLite 함수 — '%Y-%m'이면 연-월"],
-         ["실행 순서", "FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY"],
+         ["실행 순서", "FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT"],
          ["암시적 조인", "FROM a, b + WHERE 연결 — JOIN…ON(11주차)과 같은 동작의 옛 문법"],
          ["Table 1", "연구대상자 기저 특성표 — CASE로 범주를 만들고 GROUP BY로 세면 완성"]],
         small=True, tag="용어"),

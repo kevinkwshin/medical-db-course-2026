@@ -26,7 +26,7 @@ slides = [
          max_rows=6,
          title="날짜 조건 — 문자열처럼 비교한다",
          note="날짜를 'YYYY-MM-DD' 형식으로 저장하면 문자열 비교가 곧 시간 순서가 됩니다. "
-              "<b>형식 통일이 무너지면</b>(01/12/2024 vs 2024-12-01) 이 비교 전체가 무너집니다 — 14주차 주제."),
+              "형식이 통일되어 있지 않으면(01/12/2024 vs 2024-12-01) 이 비교가 성립하지 않습니다 — 14주차 주제."),
 
     qsql("65세 이상 여성 환자는? — 2026년 기준 65세 이상 = 1961년 이전 출생",
          "SELECT patient_id, sex, birth_date\nFROM patient\nWHERE sex = 'F'\n  AND birth_date <= '1961-12-31'\nORDER BY birth_date;",
@@ -65,8 +65,8 @@ slides = [
          title="LIKE — 패턴으로 찾기",
          tag="대표 질문",
          note="<span class='mono'>%</span>는 '아무 글자 여러 개', <span class='mono'>_</span>는 '아무 글자 한 개'. "
-              "KCD는 알파벳 첫 글자가 질환 대분류라서 <b>LIKE 'I%' = 순환기계 전체</b>가 됩니다. "
-              "코드 체계를 알면 LIKE 한 줄이 강력한 필터가 됩니다."),
+              "KCD 대분류는 코드 구간으로 배열되어 있어 순환기계는 I00~I99 — 그래서 <b>LIKE 'I%'가 "
+              "순환기계 전체</b>를 잡습니다. 코드 체계를 알면 LIKE 한 줄로 질환군 필터를 만들 수 있습니다."),
 
     qsql("당뇨(E11) 계열 진단만 — 더 구체적인 패턴",
          "SELECT DISTINCT kcd_code, dx_name\nFROM diagnosis\nWHERE kcd_code LIKE 'E11%';",
@@ -106,7 +106,7 @@ slides = [
 
     closing(4,
             ["WHERE = 행 필터. 비교 연산자 + <b>AND/OR(괄호로 명시)</b>로 조건을 쌓는다",
-             "IN(목록) · BETWEEN(범위, 양끝 포함) · LIKE(패턴) — <b>연구 정의서의 3대 문형</b>",
+             "IN(목록) · BETWEEN(범위, 양끝 포함) · LIKE(패턴) — <b>연구 정의서에서 가장 자주 쓰는 문형</b>",
              "KCD 코드 체계 × LIKE = 질환군 필터 (<span class='mono'>LIKE 'I%'</span> → 순환기계)",
              "NULL은 <span class='mono'>IS NULL</span>로만 — <b>=NULL은 조용히 실패한다</b>"],
             homework="Colab 4주차 Q1~Q5 + '내 연구 관심 질환의 KCD 패턴' 한 줄 찾아오기",
