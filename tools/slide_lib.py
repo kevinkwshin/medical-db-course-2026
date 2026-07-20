@@ -332,7 +332,8 @@ def render_deck(week, week_title, slides, out_pdf):
     html_path = out_pdf.replace(".pdf", ".html")
     with open(html_path, "w", encoding="utf-8") as f:
         f.write(doc)
-    subprocess.run([BRAVE, "--headless", "--disable-gpu", "--no-pdf-header-footer",
-                    f"--print-to-pdf={out_pdf}", html_path],
-                   check=True, capture_output=True)
+    r = subprocess.run([BRAVE, "--headless", "--disable-gpu", "--no-pdf-header-footer",
+                        f"--print-to-pdf={out_pdf}", html_path], capture_output=True)
+    if r.returncode != 0 or not os.path.exists(out_pdf):
+        raise RuntimeError(f"PDF 변환 실패 ({out_pdf}):\n{r.stderr.decode(errors='replace')}")
     return out_pdf

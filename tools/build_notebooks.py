@@ -9,8 +9,11 @@ BASE = os.path.dirname(os.path.abspath(__file__))
 CODE = os.path.join(BASE, "..", "code")
 SQLD = os.path.join(CODE, "sql")
 
-# mini_emr.sqlite 배포 주소 (GitHub raw)
-DB_URL = "https://raw.githubusercontent.com/kevinkwshin/medical-db-course-2026/main/mini_emr/mini_emr.sqlite"
+# mini_emr.sqlite 배포 주소 — 학기 중 데이터가 바뀌지 않도록 git 태그에 고정
+# (데이터를 변경하면: 새 태그 생성·push → DATA_TAG 갱신 → 노트북 재생성)
+DATA_TAG = "data-v1"
+DB_URL = (f"https://raw.githubusercontent.com/kevinkwshin/medical-db-course-2026/"
+          f"{DATA_TAG}/mini_emr/mini_emr.sqlite")
 
 SETUP_MD = """# {week}주차 — {title}
 **의료진을 위한 데이터베이스** · 미니 EMR 실습 노트북
@@ -53,7 +56,9 @@ def q(sql):
     return pd.read_sql_query(sql, con)
 
 def run(sql):
-    \"\"\"데이터/구조를 바꾸는 SQL(INSERT/UPDATE/DELETE/CREATE 등) 실행\"\"\"
+    \"\"\"데이터/구조를 바꾸는 SQL(INSERT/UPDATE/DELETE/CREATE 등) 실행.
+    여러 문장을 순서대로 실행하고 즉시 커밋합니다 — 트랜잭션(BEGIN/ROLLBACK) 실습은
+    8주차처럼 con.cursor()를 직접 사용하세요.\"\"\"
     con.executescript(sql); con.commit(); print("실행 완료")
 
 reset_db()

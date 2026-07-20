@@ -16,9 +16,9 @@
 
 ## 수정 방법
 
-- 슬라이드: `tools/weeks/weekNN.py` 수정 → `cd tools && python3 build_slides.py NN`
-- 데이터: `mini_emr/generate_mini_emr.py` 수정·실행 → 슬라이드 재빌드(결과 자동 갱신)
-- 노트북·문서: `tools/build_notebooks.py`, `tools/build_docs.py`
-- 빌드에는 macOS + Brave Browser 필요. 수정 후 `git push`
+- 전체 빌드+검증: `cd tools && python3 build_all.py` (개별: `build_slides.py NN`, `build_docs.py`, `build_notebooks.py`)
+- 데이터 변경 시: `mini_emr/generate_mini_emr.py` 수정·실행 → 새 데이터 태그(`data-v2` 등) push → `build_notebooks.py`의 `DATA_TAG` 갱신 → 전체 재빌드. 노트북은 태그 고정 주소에서 데이터를 받으므로 **학기 중 main이 바뀌어도 수강생 환경은 불변**
+- 검증: `tools/run_checks.py` — 데이터 시나리오·재현성·노트북 전체 셀 실행·슬라이드 SQL을 확인하며, push 시 GitHub Actions에서도 자동 실행
+- PDF 빌드에만 macOS + Brave Browser 필요 (검증·노트북 생성은 python3 + pandas면 충분)
 
 명세서 3쪽(교수자용)은 학생 배포본에서 제외. 모든 환자 데이터는 가상입니다.

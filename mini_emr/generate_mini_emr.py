@@ -121,7 +121,7 @@ for i, by in enumerate(birth_pool, start=1):
 # 4주차 실습("65세 이상 여성")이 반드시 성립하도록 고령군 일부를 여성으로 고정
 for idx in (0, 2, 5, 8, 11):
     p = patients[idx]
-    patients[idx] = (p[0], "F", p[1] if False else p[2], p[3]) if False else (p[0], "F", p[2], p[3])
+    patients[idx] = (p[0], "F", p[2], p[3])
 
 # ---------------------------------------------------------------- 2. staff
 staff = []             # (staff_id, role, department)
