@@ -19,6 +19,12 @@ ClinicalTrials.gov 임상시험 등록 자료(AACT)에서 2015~2024년 시작 �
 
 > 작성한 내용을 저장하려면 Colab 메뉴 **파일 → Drive에 사본 저장** 을 먼저 눌러 주세요.
 
+## 데이터 구성
+
+모든 표는 `nct_id`(임상시험 등록번호)로 `studies` 와 연결됩니다. `studies` 의 기본키는 `nct_id`, 나머지 표의 기본키는 `id` 이고, 각 표의 `nct_id` 는 `studies.nct_id` 를 가리키는 외래키입니다.
+
+![aact_mini 데이터 구성 (ERD)](data/aact_mini_erd.png)
+
 ## 폴더 구성
 
 | 경로 | 내용 |
@@ -26,6 +32,7 @@ ClinicalTrials.gov 임상시험 등록 자료(AACT)에서 2015~2024년 시작 �
 | `notebooks/` | 학생용 실습 · 과제 노트북 |
 | `data/aact_mini.duckdb.gz` | 수업용 DB (압축본, 노트북이 자동으로 풀어 사용) |
 | `data/aact_mini_dictionary.md` | 데이터 사전 (테이블 · 컬럼 설명) |
+| `data/aact_mini_erd.png` | 데이터 구성도 (`tools/build_erd.py` 로 생성) |
 | `tools/` | 슬라이드 · 노트북 생성 도구 (교수자용) |
 
 ## 내 컴퓨터에서 실행

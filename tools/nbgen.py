@@ -23,6 +23,29 @@ MESH = ["Lung Neoplasms", "Parkinson Disease", "Atrial Fibrillation", "Breast Ne
         "Coronary Artery Disease", "Heart Failure", "Pulmonary Disease, Chronic Obstructive", "Renal Insufficiency, Chronic",
         "Alzheimer Disease", "Obesity", "COVID-19", "Osteoarthritis", "Sepsis", "Pneumonia"]
 
+ERD_URL = "https://raw.githubusercontent.com/kevinkwshin/medical-db-course-2026/main/data/aact_mini_erd.png"
+
+# 데이터 구성 표 (그림 tools/build_erd.py 와 같은 7개 표, 슬라이드 172)
+# (표, 한 행의 뜻, 기본키, 외래키, studies 와의 관계)
+DATA_TABLES = [
+    ("studies", "임상시험 1건", "nct_id", "—", "기준이 되는 표"),
+    ("eligibilities", "선정 · 제외 기준", "id", "`nct_id` → studies", "1 : 1 (시험마다 1행)"),
+    ("sponsors", "스폰서 1곳", "id", "`nct_id` → studies", "1 : N (하나 이상)"),
+    ("conditions", "대상 질환 1개 (연구자가 적은 이름)", "id", "`nct_id` → studies", "1 : N (하나 이상)"),
+    ("browse_conditions", "표준 질환명(MeSH) 1개", "id", "`nct_id` → studies", "1 : N (없을 수도 있음)"),
+    ("countries", "참여 국가 1곳", "id", "`nct_id` → studies", "1 : N (없을 수도 있음)"),
+    ("facilities", "수행 기관 1곳", "id", "`nct_id` → studies", "1 : N (없을 수도 있음)"),
+]
+DATA_COLS = {
+    "studies": "brief_title, study_type, overall_status, phase, start_date, enrollment, results_first_posted_date",
+    "eligibilities": "gender, minimum_age (글자)",
+    "sponsors": "agency_class, lead_or_collaborator, name",
+    "conditions": "name (자유 입력이라 표기가 제각각)",
+    "browse_conditions": "mesh_term",
+    "countries": "name, removed (TRUE 면 등록 후 빠진 국가)",
+    "facilities": "name, country",
+}
+
 # ---------------------------------------------------------------- 채점 지문 (빌더 · 노트북 공용)
 GRADER_CORE = r'''
 import hashlib as _hl, math as _math, decimal as _dec, datetime as _dt
@@ -305,6 +328,32 @@ class NB:
             self.code(IDENTITY_SRC)
         self.code(setup_source(self.assignment, self.kind))
         self.code('#@title 채점용 정보 (수정하지 마세요) { display-mode: "form" }\nANSWERS = __ANSWERS__')
+
+    def data_overview(self, cols=None, intro=None):
+        """데이터 구성(ERD 그림 + 표 · 기본키 · 외래키 설명 + 1:N 확인 SQL). 그림은 tools/build_erd.py 로 만듭니다."""
+        c = dict(DATA_COLS, **(cols or {}))
+        rows = "\n".join(f"| `{t}` | {mean} | `{pk}` | {fk} | {rel} | {c[t]} |" for t, mean, pk, fk, rel in DATA_TABLES)
+        self.md(f"""
+## 데이터 구성 — 어떤 표가 있고, 어떻게 연결되나
+
+{intro or "문제를 풀기 전에 표들의 관계를 먼저 봅니다. 열이 어느 표에 있는지, 표를 어떻게 연결하는지 막히면 이 그림으로 돌아오세요."}
+
+![aact_mini 데이터 구성 (ERD)]({ERD_URL})
+
+| 표 | 한 행이 뜻하는 것 | 기본키 (PK) | 외래키 (FK) | studies 와의 관계 | 주로 쓰는 열 |
+|---|---|---|---|---|---|
+{rows}
+
+**읽는 법** (5 · 6주차)
+
+1. **기본키** — 한 행을 하나로 찾는 열입니다. `studies` 는 `nct_id`(임상시험 등록번호), 나머지 표는 `id` 입니다.
+2. **외래키** — 다른 표의 `nct_id` 는 `studies.nct_id` 를 가리킵니다. 그래서 표를 연결(JOIN)할 때는 늘 `ON s.nct_id = 다른표.nct_id` 로 잇습니다.
+3. **1 : N** — 시험 1건에 국가 · 기관 · 질환이 여러 개면 그 표에는 행이 여러 개입니다. 연결하면 시험 1건이 여러 행이 되므로, 시험 수는 `COUNT(DISTINCT s.nct_id)` 로 셉니다. 그림에서 `O` 표시가 있는 표는 행이 하나도 없는 시험도 있어서, INNER JOIN 하면 그 시험이 빠집니다.
+""")
+        self.sql("""SELECT s.nct_id, s.overall_status, c.name AS 국가
+FROM studies AS s
+JOIN countries AS c ON s.nct_id = c.nct_id
+WHERE s.nct_id = 'NCT01795521'""", comment="확인: studies 에서는 1행인 시험이 countries 와 연결하면 국가 수만큼 여러 행이 됩니다")
 
     # ---- 정답 등록
     def register(self, name, df, hint="", ordered=False, optional=False):
