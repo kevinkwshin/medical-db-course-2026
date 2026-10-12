@@ -5,14 +5,17 @@ ClinicalTrials.gov 임상시험 등록 자료(AACT)에서 2015~2024년 시작 �
 
 ## 바로 실행 (Google Colab)
 
-아래 배지를 누르면 Colab에서 노트북이 열립니다. **첫 번째 코드 셀(0. 준비)** 을 실행하면 데이터(약 50MB)를 자동으로 내려받습니다.
+아래 배지를 누르면 Colab에서 노트북이 열립니다. **준비 셀**을 실행하면 데이터(약 50MB)를 자동으로 내려받습니다. 과제는 맨 위 칸에 학번과 이름을 먼저 입력합니다.
 
-| 주차 | 노트북 | Colab |
-|---|---|---|
-| 7주차 | SQL (1) 조회 기초 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/07_실습_SQL기초.ipynb) |
-| 8주차 | SQL (2) 집계와 JOIN | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/08_실습_집계와JOIN.ipynb) |
-| 과제 1 | 과제 1 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/과제1.ipynb) |
-| 과제 2 | 과제 2 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/과제2.ipynb) |
+| 주차 | 구분 | 내용 | Colab |
+|---|---|---|---|
+| 7주차 | 실습 | SQL (1) 조회 기초 — SELECT · WHERE · ORDER BY | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/07_실습_SQL기초.ipynb) |
+| 8주차 | 실습 | SQL (2) 집계 · GROUP BY · JOIN | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/08_실습_집계와JOIN.ipynb) |
+| 9주차 | 실습 | 질문을 SQL로 바꾸기 · 서브쿼리 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/09_실습_질문을SQL로.ipynb) |
+| 9주차 | **과제 1** | 잘못된 SQL 고치기 (오류 메시지가 나는 실수 12문항) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/과제1.ipynb) |
+| 10주차 | 실습 | 표 만들기 · 데이터 수정 · 트랜잭션 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/10_실습_데이터수정.ipynb) |
+| 12주차 | 실습 | 데이터에서 나오는 오류 찾기 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/12_실습_오류찾기.ipynb) |
+| 13주차 | **과제 2** | 잘못된 SQL 고치기 (결과가 틀리는 실수 6단계) · 검산표 · 해석 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/과제2.ipynb) |
 
 > 작성한 내용을 저장하려면 Colab 메뉴 **파일 → Drive에 사본 저장** 을 먼저 눌러 주세요.
 
@@ -28,7 +31,7 @@ ClinicalTrials.gov 임상시험 등록 자료(AACT)에서 2015~2024년 시작 �
 ## 내 컴퓨터에서 실행
 
 ```bash
-pip install duckdb jupysql duckdb-engine pandas
+pip install "duckdb==1.4.5" "jupysql==0.11.1" "duckdb-engine==0.17.0" pandas
 gunzip -k data/aact_mini.duckdb.gz
 jupyter notebook notebooks/
 ```
