@@ -9,7 +9,7 @@
 채점 지문(GRADER_CORE)은 빌더와 노트북이 같은 코드를 씁니다. 값을 문자열로 바꿀 때
 정수로 떨어지는 소수(1947.0)는 정수로, Decimal 은 소수로, 날짜는 YYYY-MM-DD 로 맞춥니다.
 """
-import os, sys, json, shutil, hashlib
+import os, sys, json, shutil, hashlib, zlib, base64
 import nbformat
 from nbformat.v4 import new_notebook, new_markdown_cell, new_code_cell
 
@@ -23,7 +23,7 @@ MESH = ["Lung Neoplasms", "Parkinson Disease", "Atrial Fibrillation", "Breast Ne
         "Coronary Artery Disease", "Heart Failure", "Pulmonary Disease, Chronic Obstructive", "Renal Insufficiency, Chronic",
         "Alzheimer Disease", "Obesity", "COVID-19", "Osteoarthritis", "Sepsis", "Pneumonia"]
 
-ERD_URL = "https://raw.githubusercontent.com/kevinkwshin/medical-db-course-2026/main/data/aact_mini_erd.png"
+TABLES_IMG_URL = "https://raw.githubusercontent.com/kevinkwshin/medical-db-course-2026/main/data/aact_mini_tables.png"   # 7주차 슬라이드 "aact_mini 표 구조 한눈에 보기"
 
 # 데이터 구성 표 (그림 tools/build_erd.py 와 같은 7개 표, 슬라이드 172)
 # (표, 한 행의 뜻, 기본키, 외래키, studies 와의 관계)
@@ -49,6 +49,11 @@ DATA_COLS = {
 # ---------------------------------------------------------------- 채점 지문 (빌더 · 노트북 공용)
 GRADER_CORE = r'''
 import hashlib as _hl, math as _math, decimal as _dec, datetime as _dt
+import re as _re, zlib as _zlib, base64 as _b64, json as _json
+
+def _load_answers(blob):
+    """자동 확인용 지문(정답 결과표의 해시 · 행 수 · 열 이름 · 힌트)을 풉니다. 정답 SQL 은 들어 있지 않습니다."""
+    return _json.loads(_zlib.decompress(_b64.b64decode(blob)).decode())
 
 def _v(v):
     """값 하나를 비교용 문자열로: 빈 값 → '', 1947.0 → '1947', 날짜 → 'YYYY-MM-DD'"""
@@ -85,7 +90,7 @@ def _sigs(df):
 
 # ---------------------------------------------------------------- 노트북 안에서만 쓰는 함수
 RUNTIME = r'''
-_LAST = {"tag": None, "error": False}
+_LAST = {"tag": None, "error": False, "sql": ""}
 _TRIES, _RESULT = {}, {}
 
 def _after_cell(result):
@@ -102,7 +107,8 @@ def _after_cell(result):
             break
         if s:
             break
-    _LAST.update(tag=tag, error=not result.success)
+    body = "\n".join(l.split("--")[0] for l in src.split("\n")[1:])
+    _LAST.update(tag=tag, error=not result.success, sql=body)
 
 for _cb in list(get_ipython().events.callbacks["post_run_cell"]):
     if getattr(_cb, "__name__", "") == "_after_cell":
@@ -136,6 +142,8 @@ def check(name, df=None):
     exp = _expected(name)
     if exp is None:
         print("⚠️ 학번이 입력되지 않아 배정 질환이 없습니다. 맨 위 학번 셀과 준비 셀을 다시 실행하세요."); return
+    if _LAST["sql"] and not _re.search(r"\bFROM\b", _LAST["sql"], _re.I):
+        return _miss(name, "FROM 이 없는 SQL 입니다. 숫자를 직접 적지 말고, 표에서 꺼내 세는 SQL 을 쓰세요.", exp)
     if _LAST["error"]:
         return _miss(name, "바로 위 SQL 셀에서 오류가 났습니다. 붉은 글씨 중 'Error:' 가 들어간 줄을 읽고 SQL을 고친 뒤 다시 실행하세요.", exp)
     if not isinstance(df, _pd.DataFrame):
@@ -327,7 +335,12 @@ class NB:
         if self.assignment:
             self.code(IDENTITY_SRC)
         self.code(setup_source(self.assignment, self.kind))
-        self.code('#@title 채점용 정보 (수정하지 마세요) { display-mode: "form" }\nANSWERS = __ANSWERS__')
+        self.code('#@title 자동 확인 도우미 — 정답 SQL 은 들어 있지 않습니다 (수정하지 마세요) { display-mode: "form" }\n'
+                  'ANSWERS = _load_answers("__ANSWERS__")')
+
+    def tables_figure(self, note=None):
+        """7주차 슬라이드 'aact_mini 표 구조 한눈에 보기' 그림 (data/aact_mini_tables.png)"""
+        self.md(f"![aact_mini 표 구조 한눈에 보기]({TABLES_IMG_URL})" + (("\n\n" + note.strip()) if note else ""))
 
     def data_overview(self, cols=None, intro=None):
         """데이터 구성(ERD 그림 + 표 · 기본키 · 외래키 설명 + 1:N 확인 SQL). 그림은 tools/build_erd.py 로 만듭니다."""
@@ -338,7 +351,7 @@ class NB:
 
 {intro or "문제를 풀기 전에 표들의 관계를 먼저 봅니다. 열이 어느 표에 있는지, 표를 어떻게 연결하는지 막히면 이 그림으로 돌아오세요."}
 
-![aact_mini 데이터 구성 (ERD)]({ERD_URL})
+![aact_mini 표 구조 한눈에 보기]({TABLES_IMG_URL})
 
 | 표 | 한 행이 뜻하는 것 | 기본키 (PK) | 외래키 (FK) | studies 와의 관계 | 주로 쓰는 열 |
 |---|---|---|---|---|---|
@@ -348,7 +361,7 @@ class NB:
 
 1. **기본키** — 한 행을 하나로 찾는 열입니다. `studies` 는 `nct_id`(임상시험 등록번호), 나머지 표는 `id` 입니다.
 2. **외래키** — 다른 표의 `nct_id` 는 `studies.nct_id` 를 가리킵니다. 그래서 표를 연결(JOIN)할 때는 늘 `ON s.nct_id = 다른표.nct_id` 로 잇습니다.
-3. **1 : N** — 시험 1건에 국가 · 기관 · 질환이 여러 개면 그 표에는 행이 여러 개입니다. 연결하면 시험 1건이 여러 행이 되므로, 시험 수는 `COUNT(DISTINCT s.nct_id)` 로 셉니다. 그림에서 `O` 표시가 있는 표는 행이 하나도 없는 시험도 있어서, INNER JOIN 하면 그 시험이 빠집니다.
+3. **1 : N** — 시험 1건에 국가 · 기관 · 질환이 여러 개면 그 표에는 행이 여러 개입니다. 연결하면 시험 1건이 여러 행이 되므로, 시험 수는 `COUNT(DISTINCT s.nct_id)` 로 셉니다. 또 `browse_conditions` · `countries` · `facilities` 에는 행이 하나도 없는 시험도 있어서, INNER JOIN 하면 그 시험이 빠집니다.
 """)
         self.sql("""SELECT s.nct_id, s.overall_status, c.name AS 국가
 FROM studies AS s
@@ -380,8 +393,9 @@ WHERE s.nct_id = 'NCT01795521'""", comment="확인: studies 에서는 1행인 �
         nb.metadata["language_info"] = {"name": "python"}
         nb.metadata["colab"] = {"provenance": [], "toc_visible": True}
         for c in nb.cells:
-            if c.cell_type == "code" and "ANSWERS = __ANSWERS__" in c.source:
-                c.source = c.source.replace("__ANSWERS__", repr(self.answers))
+            if c.cell_type == "code" and '_load_answers("__ANSWERS__")' in c.source:
+                blob = base64.b64encode(zlib.compress(json.dumps(self.answers, ensure_ascii=False).encode(), 9)).decode()
+                c.source = c.source.replace("__ANSWERS__", blob)
         os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
         nbformat.write(nb, path)
         return path
