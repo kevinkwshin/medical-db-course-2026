@@ -1,0 +1,23 @@
+# 슬라이드 (저장소에 올리지 않음)
+*.pptx
+~$*
+
+# 원본·대용량 데이터 (압축본 data/aact_mini.duckdb.gz 만 올림)
+data/*.zip
+data/*.duckdb
+data/.aact_env
+*.wal
+
+# 교수자용 정답 노트북 · 정답이 들어 있는 생성 스크립트
+notebooks/instructor/
+tools/build_nb_*.py
+
+# 작업 산출물
+tools/render/
+tools/pkg/
+output/
+.codex-build/
+__pycache__/
+.ipynb_checkpoints/
+.DS_Store
+tools/office39/

@@ -1,0 +1,3 @@
+# 이 파일을 복사해 .aact_env 로 저장하고 값을 채우세요. (.aact_env 는 배포·공유 금지)
+AACT_USER=your_aact_id
+AACT_PASSWORD=your_aact_password
