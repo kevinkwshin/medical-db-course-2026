@@ -17,11 +17,10 @@ DB_NAME = "aact_mini.duckdb"
 DATA_URL = "https://raw.githubusercontent.com/kevinkwshin/medical-db-course-2026/main/data/aact_mini.duckdb.gz"
 KERNEL = "py39"
 
-# 과제 배정 질환 15개. 슬라이드 예제에 숫자가 나오는 질환(제2형 당뇨병 · 뇌졸중 · 고혈압 · 천식)은
-# 2026-10-12 에 빼고, 슬라이드 · 노트북에 나오지 않는 질환으로 바꿨습니다.
-MESH = ["Lung Neoplasms", "Parkinson Disease", "Atrial Fibrillation", "Breast Neoplasms", "Depressive Disorder",
-        "Coronary Artery Disease", "Heart Failure", "Pulmonary Disease, Chronic Obstructive", "Renal Insufficiency, Chronic",
-        "Alzheimer Disease", "Obesity", "COVID-19", "Osteoarthritis", "Sepsis", "Pneumonia"]
+# 과제 분석 질환: 모든 학생이 같은 질환(제2형 당뇨병)을 분석합니다 (슬라이드 '과제 1 안내' · '과제 2 안내').
+# 2026-10-12 까지는 학번별로 15개 질환을 배정했으나, 교수자 결정으로 하나로 바꿨습니다.
+# 목록 구조(register_mesh · by_mesh)는 그대로 두어 다시 여러 질환으로 바꾸기 쉽게 했습니다.
+MESH = ["Diabetes Mellitus, Type 2"]
 
 TABLES_IMG_URL = "https://raw.githubusercontent.com/kevinkwshin/medical-db-course-2026/main/data/aact_mini_tables.png"   # 7주차 슬라이드 "aact_mini 표 구조 한눈에 보기"
 
@@ -141,7 +140,7 @@ def check(name, df=None):
         print(f"⚠️ 방금 실행한 SQL 셀은 {_LAST['tag']} 입니다. {name} 의 %%sql 셀을 먼저 실행한 뒤 이 셀을 실행하세요."); return
     exp = _expected(name)
     if exp is None:
-        print("⚠️ 학번이 입력되지 않아 배정 질환이 없습니다. 맨 위 학번 셀과 준비 셀을 다시 실행하세요."); return
+        print("⚠️ 분석 질환 정보가 없습니다. 맨 위 학번 셀과 준비 셀을 다시 실행하세요."); return
     if _LAST["sql"] and not _re.search(r"\bFROM\b", _LAST["sql"], _re.I):
         return _miss(name, "FROM 이 없는 SQL 입니다. 숫자를 직접 적지 말고, 표에서 꺼내 세는 SQL 을 쓰세요.", exp)
     if _LAST["error"]:
@@ -222,7 +221,19 @@ except Exception:
     pass
 conn = duckdb.connect(DB, read_only=True)
 conn.execute("SET python_enable_replacements = false")   # 빈칸 ___ 을 파이썬 변수로 읽지 않게
-%sql conn --alias aact
+
+class _SameCursor:                           # jupysql 이 셀마다 새 cursor(=새 연결)를 열면
+    def __init__(self, c): self._c = c       # CREATE TEMP TABLE 로 만든 표가 다음 셀에서 사라지므로
+    def close(self): pass                    # 항상 같은 연결을 쓰게 합니다
+    def __getattr__(self, k): return getattr(self._c, k)
+
+class _OneConnection:
+    def __init__(self, c): self._c = c
+    def cursor(self): return _SameCursor(self._c)
+    def __getattr__(self, k): return getattr(self._c, k)
+
+_aact = _OneConnection(conn)
+%sql _aact --alias aact
 '''.replace("__URL__", DATA_URL)
 
 IDENTITY_SRC = r'''#@title ✏️ 학번과 이름을 입력한 뒤 이 셀을 실행하세요 { display-mode: "form" }
@@ -233,17 +244,16 @@ IDENTITY_SRC = r'''#@title ✏️ 학번과 이름을 입력한 뒤 이 셀을 �
 ASSIGN_SRC = r'''
 MESH = __MESH__
 학번, 이름 = str(globals().get("학번", "")).strip(), str(globals().get("이름", "")).strip()
+MY_MESH = MESH[int(_hl.md5(학번.encode()).hexdigest(), 16) % len(MESH)]      # 지금은 모든 학생 공통
 if not 학번 or 학번 == "20260000":
-    MY_MESH = None
     print("⚠️ 학번이 비어 있습니다. 맨 위 셀에 학번과 이름을 입력하고, 그 셀과 이 준비 셀을 다시 실행하세요.")
 else:
-    MY_MESH = MESH[int(_hl.md5(학번.encode()).hexdigest(), 16) % len(MESH)]
-    print(f"연결 완료.  {이름}({학번}) 님의 배정 질환:  {MY_MESH}")
-    print("→ SQL 의 '{{MY_MESH}}' 자리에 이 질환이 자동으로 들어갑니다. 질환 이름을 직접 적지 않아도 됩니다.")
+    print(f"연결 완료.  {이름}({학번})")
+print(f"분석 질환: {MY_MESH} (제2형 당뇨병, 모든 학생 공통)")
 
 def 제출확인():
     """제출 전에 실행: 문항별 결과와 제출 방법을 보여 줍니다."""
-    print(f"제출자: {이름 or '(이름 없음)'} ({학번 or '학번 없음'})  /  배정 질환: {MY_MESH}")
+    print(f"제출자: {이름 or '(이름 없음)'} ({학번 or '학번 없음'})  /  분석 질환: {MY_MESH}")
     진행확인()
     print("\n제출 방법: ① 메뉴 런타임 → 모두 실행 (못 고친 문항에서 멈추면 그 아래 셀을 누르고 런타임 → 이후 셀 실행)")
     print("           ② 위 결과 확인  ③ 파일 → 다운로드 → .ipynb 다운로드")
@@ -282,7 +292,7 @@ def mesh_sql(m):
 
 
 def id_for_mesh(mesh):
-    """배정 질환이 mesh 가 되는 테스트용 학번을 찾습니다."""
+    """분석 질환이 mesh 가 되는 테스트용 학번을 찾습니다 (질환이 하나면 아무 학번)."""
     i = 20260001
     while True:
         if MESH[int(hashlib.md5(str(i).encode()).hexdigest(), 16) % len(MESH)] == mesh:
@@ -291,7 +301,7 @@ def id_for_mesh(mesh):
 
 
 class NB:
-    """notebook builder.  assignment=True 이면 학번 셀 · 배정 질환 · 제출확인() 이 들어갑니다."""
+    """notebook builder.  assignment=True 이면 학번 셀 · 분석 질환 · 제출확인() 이 들어갑니다."""
 
     def __init__(self, title, intro_md=None, assignment=False, kind=""):
         self.cells, self.answers = [], {}
@@ -375,7 +385,7 @@ WHERE s.nct_id = 'NCT01795521'""", comment="확인: studies 에서는 1행인 �
         self.answers[name] = {**s, "hint": hint, "ordered": ordered, "optional": optional}
 
     def register_mesh(self, name, qf, ref, hint="", ordered=False, optional=False):
-        """배정 질환마다 답이 다른 문항: qf(mesh_sql 이 적용된 질환명) → SQL ('{{MY_MESH}}' 문자열도 가능)"""
+        """질환마다 답이 다른 문항(MESH 가 여러 개일 때): qf(mesh_sql 이 적용된 질환명) → SQL ('{{MY_MESH}}' 문자열도 가능)"""
         by = {m: sigs(ref(_sql_for(qf, m))) for m in MESH}
         self.answers[name] = {"by_mesh": by, "hint": hint, "ordered": ordered, "optional": optional}
 
