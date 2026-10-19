@@ -43,6 +43,29 @@ gunzip -k data/aact_mini.duckdb.gz
 jupyter notebook notebooks/
 ```
 
-## 데이터 출처
+## 데이터 출처 — AACT 와 aact_mini
 
-[AACT (Aggregate Analysis of ClinicalTrials.gov)](https://aact.ctti-clinicaltrials.org/) — Clinical Trials Transformation Initiative
+**AACT (Aggregate Analysis of ClinicalTrials.gov)** 는 Clinical Trials Transformation Initiative(CTTI)가 ClinicalTrials.gov 등록 자료 전체를 관계형 데이터베이스로 정리해 매일 공개하는 자료입니다.
+
+| 항목 | 링크 |
+|---|---|
+| AACT 홈페이지 | <https://aact.ctti-clinicaltrials.org/> |
+| 내려받기 (무료 회원가입 후 로그인) | <https://aact.ctti-clinicaltrials.org/snapshots> → **Flat Text Files** (파이프 `\|` 로 구분한 텍스트 파일 묶음, zip) |
+
+### aact_mini 를 만든 과정
+
+| 단계 | 한 일 |
+|---|---|
+| ① 내려받기 | 2026년 9월 AACT 스냅샷의 Flat Text Files(zip 약 2.5GB, 표 49개)를 받았습니다. 자료 기준일은 2026년 9월 중순입니다(가장 최근 결과 게시일 2026-09-17). |
+| ② 표 고르기 | 수업에 쓰는 **14개 표**만 꺼냈습니다: `studies`, `brief_summaries`, `conditions`, `browse_conditions`, `interventions`, `browse_interventions`, `sponsors`, `facilities`, `countries`, `eligibilities`, `calculated_values`, `designs`, `design_outcomes`, `keywords` |
+| ③ 시험 고르기 | **2015-01-01 ~ 2024-12-31 에 시작한 시험** 중 일부만 뽑았습니다. 등록번호(`nct_id`)의 해시값으로 약 8% 를 골라, 다시 만들어도 같은 시험이 뽑힙니다. 자주 쓰는 15개 질환(제2형 당뇨병 등)은 시험 수가 넉넉하도록 약 30% 를 뽑았습니다. → **37,509건** |
+| ④ 줄이기 | 14개 표에서 뽑힌 시험의 행만 남겨 DuckDB 파일 하나(`aact_mini.duckdb`, 114MB)로 저장하고, 데이터 사전(`aact_mini_dictionary.md`)을 함께 만들었습니다. 원본의 형식(빈칸 = NULL, 참/거짓 `t`/`f`, 긴 글의 줄바꿈 `~`)은 이때 정리했습니다. |
+| ⑤ 배포 | gzip 으로 압축(48MB)해 이 저장소에 올렸습니다. 노트북의 준비 셀이 자동으로 받아 압축을 풉니다. |
+
+다시 만들 때 (교수자용):
+
+```bash
+python3 tools/build_aact_mini.py --snapshot data/<내려받은_파일>.zip
+```
+
+> aact_mini 는 **표본**이므로 건수 · 비율이 ClinicalTrials.gov 전체와 다릅니다. 수업에서 나오는 숫자는 이 표본 기준입니다.

@@ -22,7 +22,7 @@ KERNEL = "py39"
 # 목록 구조(register_mesh · by_mesh)는 그대로 두어 다시 여러 질환으로 바꾸기 쉽게 했습니다.
 MESH = ["Diabetes Mellitus, Type 2"]
 
-TABLES_IMG_URL = "https://raw.githubusercontent.com/kevinkwshin/medical-db-course-2026/main/data/aact_mini_tables.png"   # 7주차 슬라이드 "aact_mini 표 구조 한눈에 보기"
+TABLES_IMG_URL = "https://raw.githubusercontent.com/kevinkwshin/medical-db-course-2026/main/data/aact_mini_erd.png"   # 7주차 슬라이드 "aact_mini 데이터 구성 (ERD)" 와 같은 그림
 
 # 데이터 구성 표 (그림 tools/build_erd.py 와 같은 7개 표, 슬라이드 172)
 # (표, 한 행의 뜻, 기본키, 외래키, studies 와의 관계)
@@ -216,7 +216,7 @@ _pd.set_option("display.max_colwidth", 60)
 %xmode Minimal
 try:                                         # jupysql 의 영어 안내문(If using snippets ...)을 숨김
     import sql.error_handler as _eh
-    _eh.CTE_MSG, _eh.ORIGINAL_ERROR = "", ""
+    _eh.CTE_MSG, _eh.ORIGINAL_ERROR = "↓ 아래 '… Error:' 로 시작하는 줄이 원인입니다", ""
 except Exception:
     pass
 conn = duckdb.connect(DB, read_only=True)
