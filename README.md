@@ -12,10 +12,10 @@ ClinicalTrials.gov 임상시험 등록 자료(AACT)에서 2015~2024년 시작 �
 | 7주차 | 실습 | SQL (1) 조회 기초 — SELECT · WHERE · ORDER BY | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/07_실습_SQL기초.ipynb) |
 | 8주차 | 실습 | SQL (2) 집계 · GROUP BY · JOIN | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/08_실습_집계와JOIN.ipynb) |
 | 9주차 | 실습 | 질문을 SQL로 바꾸기 · 서브쿼리 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/09_실습_질문을SQL로.ipynb) |
-| 9주차 | **과제 1** | 잘못된 SQL 고치기 (오류 메시지가 나는 실수 12문항) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/과제1.ipynb) |
-| 10주차 | 실습 | 표 만들기 · 데이터 수정 · 트랜잭션 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/10_실습_데이터수정.ipynb) |
+| 9주차 | **과제 1** | 일반적인 SQL 사용법 — 잘못된 SQL 12개 고치기 (조회 · 집계 · JOIN) · 해석 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/과제1.ipynb) |
+| 10주차 | 실습 | 데이터 수정 · 트랜잭션 · 뷰 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/10_실습_데이터수정.ipynb) |
 | 12주차 | 실습 | 데이터에서 나오는 오류 찾기 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/12_실습_오류찾기.ipynb) |
-| 13주차 | **과제 2** | 잘못된 SQL 고치기 (결과가 틀리는 실수 6단계) · 검산표 · 해석 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/과제2.ipynb) |
+| 13주차 | **과제 2** | 당뇨병 임상시험 분석 — 변수 찾기 → 표 연결 → 통계 (잘못된 SQL 6개 고치기) · 결과표 · 해석 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/과제2.ipynb) |
 
 > 작성한 내용을 저장하려면 Colab 메뉴 **파일 → Drive에 사본 저장** 을 먼저 눌러 주세요.
 
