@@ -52,15 +52,18 @@ jupyter notebook notebooks/
 | AACT 홈페이지 | <https://aact.ctti-clinicaltrials.org/> |
 | 내려받기 (무료 회원가입 후 로그인) | <https://aact.ctti-clinicaltrials.org/snapshots> → **Flat Text Files** (파이프 `\|` 로 구분한 텍스트 파일 묶음, zip) |
 
-### aact_mini 를 만든 과정
+### aact_mini 추출 기준
 
-| 단계 | 한 일 |
+| 기준 | 내용 |
 |---|---|
-| ① 내려받기 | 2026년 9월 AACT 스냅샷의 Flat Text Files(zip 약 2.5GB, 표 49개)를 받았습니다. 자료 기준일은 2026년 9월 중순입니다(가장 최근 결과 게시일 2026-09-17). |
-| ② 표 고르기 | 수업에 쓰는 **14개 표**만 꺼냈습니다: `studies`, `brief_summaries`, `conditions`, `browse_conditions`, `interventions`, `browse_interventions`, `sponsors`, `facilities`, `countries`, `eligibilities`, `calculated_values`, `designs`, `design_outcomes`, `keywords` |
-| ③ 시험 고르기 | **2015-01-01 ~ 2024-12-31 에 시작한 시험** 중 일부만 뽑았습니다. 등록번호(`nct_id`)의 해시값으로 약 8% 를 골라, 다시 만들어도 같은 시험이 뽑힙니다. 자주 쓰는 15개 질환(제2형 당뇨병 등)은 시험 수가 넉넉하도록 약 30% 를 뽑았습니다. → **37,509건** |
-| ④ 줄이기 | 14개 표에서 뽑힌 시험의 행만 남겨 DuckDB 파일 하나(`aact_mini.duckdb`, 114MB)로 저장하고, 데이터 사전(`aact_mini_dictionary.md`)을 함께 만들었습니다. 원본의 형식(빈칸 = NULL, 참/거짓 `t`/`f`, 긴 글의 줄바꿈 `~`)은 이때 정리했습니다. |
-| ⑤ 배포 | gzip 으로 압축(48MB)해 이 저장소에 올렸습니다. 노트북의 준비 셀이 자동으로 받아 압축을 풉니다. |
+| 원본 | AACT 스냅샷 (Flat Text Files, 표 49개, 약 2.5GB). 추출일 2026-09-19 |
+| 대상 시험 | 시작일(`start_date`)이 **2015-01-01 ~ 2024-12-31** 인 임상시험 |
+| 표본 | 등록번호(`nct_id`)의 해시값으로 **약 8%** 를 뽑음. 다시 만들어도 같은 시험이 뽑힘 |
+| 추가 표본 | 자주 쓰는 질환 15개(제2형 당뇨병 · 고혈압 · 천식 등, MeSH 기준)는 **약 30%** 를 뽑아 시험 수를 넉넉하게 함 |
+| 결과 | **37,509건** (그중 제2형 당뇨병 1,353건) |
+| 표 | 49개 중 수업에 쓰는 **14개**만 사용. 모두 `nct_id` 로 `studies` 와 연결 |
+| 열 | 표마다 수업에 필요한 열만 사용 (예: `studies` 는 30개 열) |
+| 정리 | 빈칸 → NULL, 긴 글의 줄바꿈 기호 `~` → 줄바꿈으로 복원, 선정 · 제외 기준 글은 앞 1,500자만 |
 
 다시 만들 때 (교수자용):
 
