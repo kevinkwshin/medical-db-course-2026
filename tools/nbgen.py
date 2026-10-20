@@ -144,13 +144,13 @@ def check(name, df=None):
         print(f"⚠️ 방금 실행한 SQL 셀은 {_LAST['tag']} 입니다. {name} 의 %%sql 셀을 먼저 실행한 뒤 이 셀을 실행하세요."); return
     exp = _expected(name)
     if exp is None:
-        print("⚠️ 분석 질환 정보가 없습니다. 맨 위 학번 셀과 준비 셀을 다시 실행하세요."); return
+        print("⚠️ 분석 질환 정보가 없습니다. 맨 위 준비 셀을 다시 실행하세요."); return
     if _LAST["sql"] and not _re.search(r"\bFROM\b", _LAST["sql"], _re.I):
         return _miss(name, "FROM 이 없는 SQL 입니다. 숫자를 직접 적지 말고, 표에서 꺼내 세는 SQL 을 쓰세요.", exp)
     if _LAST["error"]:
         return _miss(name, "SQL 에서 오류가 났습니다. 붉은 글씨 중 'Error:' 가 들어간 줄을 읽고 고친 뒤 다시 실행하세요.", exp)
     if not isinstance(df, _pd.DataFrame):
-        return _miss(name, f"결과가 표가 아닙니다. %%sql 셀을 실행한 뒤, 바로 다음 셀에서 check('{name}', _) 를 실행하세요.", exp)
+        return _miss(name, "결과가 표가 아닙니다. SQL 이 SELECT 로 끝나는지 확인하세요.", exp)
     got = _sigs(df)
     if got["sig"] == exp["sig"] and (not exp.get("ordered") or got["osig"] == exp["osig"]):
         _RESULT[name] = True
@@ -184,7 +184,7 @@ def 진행확인():
     ok = [n for n in core if _RESULT.get(n) is True]
     print(f"정답 {len(ok)} / {len(core)} 문항")
     for n in names:
-        mark = {True: "✅", False: "❌"}.get(_RESULT.get(n), "·  (아직 check 안 함)")
+        mark = {True: "✅", False: "❌"}.get(_RESULT.get(n), "·  (아직 실행 안 함)")
         print(f"  {n:>4}  {mark}" + ("   (선택)" if ANSWERS[n].get("optional") else ""))
 '''
 
@@ -250,7 +250,7 @@ MESH = __MESH__
 학번, 이름 = str(globals().get("학번", "")).strip(), str(globals().get("이름", "")).strip()
 MY_MESH = MESH[int(_hl.md5(학번.encode()).hexdigest(), 16) % len(MESH)]      # 지금은 모든 학생 공통
 if not 학번 or 학번 == "20260000":
-    print("⚠️ 학번이 비어 있습니다. 맨 위 셀에 학번과 이름을 입력하고, 그 셀과 이 준비 셀을 다시 실행하세요.")
+    print("⚠️ 학번이 비어 있습니다. 위 칸에 학번과 이름을 입력하고 이 준비 셀을 다시 실행하세요.")
 else:
     print(f"연결 완료.  {이름}({학번})")
 print(f"분석 질환: {MY_MESH} (제2형 당뇨병, 모든 학생 공통)")
