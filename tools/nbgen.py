@@ -259,7 +259,7 @@ def 제출확인():
     """제출 전에 실행: 문항별 결과와 제출 방법을 보여 줍니다."""
     print(f"제출자: {이름 or '(이름 없음)'} ({학번 or '학번 없음'})  /  분석 질환: {MY_MESH}")
     진행확인()
-    print("\n제출: ① 런타임 → 모두 실행 (오류에서 멈추면 아래 셀부터 '이후 셀 실행')  ② 파일 → 다운로드 → .ipynb  ③ LMS 에 __KIND__.ipynb 제출")
+    print("\n제출: ① Runtime → Run all (오류에서 멈추면 아래 셀을 누르고 Runtime → Run after)  ② File → Download → Download .ipynb  ③ LMS 에 __KIND__.ipynb 제출")
 '''
 
 
@@ -337,7 +337,7 @@ class NB:
         self.md("""
 ## 0. 시작하기 전에
 
-- Colab 에서는 먼저 **`파일 → Drive에 사본 저장`** 을 누르세요.
+- Colab 에서는 먼저 **`File → Save a copy in Drive`** 를 누르세요.
 - 셀은 **위에서부터 차례로** 실행합니다 (▶ 또는 `Shift + Enter`). `%%sql` 아래의 `-- Q1` 같은 줄은 지우지 마세요.
 - 문항 SQL 을 실행하면 결과 아래에 **✅ / ❌** 가 바로 나옵니다.
 - 오류가 나면 **`… Error:` 로 시작하는 줄**만 읽으면 됩니다.
