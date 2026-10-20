@@ -372,13 +372,14 @@ class NB:
 **읽는 법** (5 · 6주차)
 
 1. **기본키** — 한 행을 하나로 찾는 열입니다. `studies` 는 `nct_id`(임상시험 등록번호), 나머지 표는 `id` 입니다.
-2. **외래키** — 다른 표의 `nct_id` 는 `studies.nct_id` 를 가리킵니다. 그래서 표를 연결(JOIN)할 때는 늘 `ON s.nct_id = 다른표.nct_id` 로 잇습니다.
-3. **1 : N** — 시험 1건에 국가 · 기관 · 질환이 여러 개면 그 표에는 행이 여러 개입니다. 연결하면 시험 1건이 여러 행이 되므로, 시험 수는 `COUNT(DISTINCT s.nct_id)` 로 셉니다. 또 `browse_conditions` · `countries` · `facilities` 에는 행이 하나도 없는 시험도 있어서, INNER JOIN 하면 그 시험이 빠집니다.
+2. **외래키** — 다른 표의 `nct_id` 는 `studies.nct_id` 를 가리킵니다. 그래서 표를 연결(JOIN)할 때는 늘 `ON studies.nct_id = 다른표.nct_id` 로 잇습니다.
+3. **1 : N** — 시험 1건에 국가 · 기관 · 질환이 여러 개면 그 표에는 행이 여러 개입니다. 연결하면 시험 1건이 여러 행이 되므로, 시험 수는 `COUNT(DISTINCT studies.nct_id)` 로 셉니다. 또 `browse_conditions` · `countries` · `facilities` 에는 행이 하나도 없는 시험도 있어서, INNER JOIN 하면 그 시험이 빠집니다.
 """)
-        self.sql("""SELECT s.nct_id, s.overall_status, c.name AS 국가
-FROM studies AS s
-JOIN countries AS c ON s.nct_id = c.nct_id
-WHERE s.nct_id = 'NCT01795521'""", comment="확인: studies 에서는 1행인 시험이 countries 와 연결하면 국가 수만큼 여러 행이 됩니다")
+        self.sql("""SELECT studies.nct_id, overall_status, name AS 국가
+FROM studies
+JOIN countries
+  ON studies.nct_id = countries.nct_id
+WHERE studies.nct_id = 'NCT01795521'""", comment="확인: studies 에서는 1행인 시험이 countries 와 연결하면 국가 수만큼 여러 행이 됩니다")
 
     # ---- 정답 등록
     def register(self, name, df, hint="", ordered=False, optional=False):
