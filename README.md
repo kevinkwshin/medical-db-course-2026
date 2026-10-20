@@ -17,7 +17,7 @@ ClinicalTrials.gov 임상시험 등록 자료(AACT)에서 2015~2024년 시작 �
 | <sub>12주차</sub> | <sub>실습</sub> | <sub>데이터에서 나오는 오류 찾기</sub> | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/12_실습_오류찾기.ipynb) |
 | <sub>13주차</sub> | <sub>**과제 2**</sub> | <sub>당뇨병 임상시험 분석 — 변수 찾기 → 표 연결 → 통계 (잘못된 SQL 6개 고치기) · 결과표 · 해석</sub> | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/과제2.ipynb) |
 
-> Colab 배지를 **새 창(탭)** 으로 열려면 **Ctrl**(Mac 은 **⌘**)을 누른 채 클릭하세요.
+> Colab 배지를 **새 창**으로 열려면 배지에서 **마우스 오른쪽 버튼 → 새 창에서 링크 열기**를 누르세요.
 >
 > 작성한 내용을 저장하려면 Colab 메뉴 **File → Save a copy in Drive** 를 먼저 눌러 주세요. 과제 제출 파일은 **File → Download → Download .ipynb** 로 받습니다.
 
