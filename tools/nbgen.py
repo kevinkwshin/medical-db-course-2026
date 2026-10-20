@@ -110,6 +110,8 @@ def _after_cell(result):
             break
     body = "\n".join(l.split("--")[0] for l in src.split("\n")[1:])
     _LAST.update(tag=tag, error=not result.success, sql=body)
+    if tag and tag in globals().get("ANSWERS", {}):         # 문항 셀(-- Q1)이면 실행하자마자 ✅/❌ 표시
+        check(tag, getattr(result, "result", None))
 
 for _cb in list(get_ipython().events.callbacks["post_run_cell"]):
     if getattr(_cb, "__name__", "") == "_after_cell":
@@ -146,7 +148,7 @@ def check(name, df=None):
     if _LAST["sql"] and not _re.search(r"\bFROM\b", _LAST["sql"], _re.I):
         return _miss(name, "FROM 이 없는 SQL 입니다. 숫자를 직접 적지 말고, 표에서 꺼내 세는 SQL 을 쓰세요.", exp)
     if _LAST["error"]:
-        return _miss(name, "바로 위 SQL 셀에서 오류가 났습니다. 붉은 글씨 중 'Error:' 가 들어간 줄을 읽고 SQL을 고친 뒤 다시 실행하세요.", exp)
+        return _miss(name, "SQL 에서 오류가 났습니다. 붉은 글씨 중 'Error:' 가 들어간 줄을 읽고 고친 뒤 다시 실행하세요.", exp)
     if not isinstance(df, _pd.DataFrame):
         return _miss(name, f"결과가 표가 아닙니다. %%sql 셀을 실행한 뒤, 바로 다음 셀에서 check('{name}', _) 를 실행하세요.", exp)
     got = _sigs(df)
@@ -325,12 +327,11 @@ class NB:
         self.cells.append(new_code_cell(head + query.strip("\n")))
 
     def sql_blank(self, name, template, comment=None):
-        """학생이 채우는 SQL 셀(첫 줄 주석 = 문항 이름) + check 셀"""
+        """학생이 채우는 SQL 셀(첫 줄 주석 = 문항 이름). 실행하면 결과 아래에 ✅/❌ 가 자동으로 나옴"""
         head = f"%%sql\n-- {name}\n"
         if comment and comment.strip() != name:
             head += "".join(f"-- {line}\n" for line in comment.split("\n"))
         self.cells.append(new_code_cell(head + template.strip("\n")))
-        self.cells.append(new_code_cell(f'check("{name}", _)'))
 
     def setup(self, note=None):
         self.md("""
@@ -338,14 +339,16 @@ class NB:
 
 - Colab 에서는 먼저 **`파일 → Drive에 사본 저장`** 을 누르세요.
 - 셀은 **위에서부터 차례로** 실행합니다 (▶ 또는 `Shift + Enter`). `%%sql` 아래의 `-- Q1` 같은 줄은 지우지 마세요.
+- 문항 SQL 을 실행하면 결과 아래에 **✅ / ❌** 가 바로 나옵니다.
 - 오류가 나면 **`… Error:` 로 시작하는 줄**만 읽으면 됩니다.
 """ + ("- ✏️ 칸은 첫 줄을 두고 `→` 뒤에 적습니다.\n" if self.assignment else "")
   + (("\n" + note.strip("\n")) if note else ""))
-        if self.assignment:
-            self.code(IDENTITY_SRC)
-        self.code(setup_source(self.assignment, self.kind))
-        self.code('#@title 자동 확인 도우미 — 정답 SQL 은 들어 있지 않습니다 (수정하지 마세요) { display-mode: "form" }\n'
-                  'ANSWERS = _load_answers("__ANSWERS__")')
+        src = setup_source(self.assignment, self.kind) + '\nANSWERS = _load_answers("__ANSWERS__")   # 자동 확인용 (정답 SQL 은 없음)\n'
+        if self.assignment:          # 학번 · 이름 칸을 준비 셀 맨 위에 (Colab 양식)
+            src = src.replace(src.split("\n", 1)[0],
+                              '#@title ✏️ 학번 · 이름을 입력하고 실행하세요 (준비 셀) { display-mode: "form" }\n'
+                              '학번 = ""  #@param {type:"string"}\n이름 = ""  #@param {type:"string"}', 1)
+        self.code(src)
 
     def tables_figure(self, note=None):
         """7주차 슬라이드 'aact_mini 표 구조 한눈에 보기' 그림 (data/aact_mini_tables.png)"""
@@ -416,8 +419,16 @@ def execute(path, cwd, kernel=KERNEL, timeout=600, prelude=None):
     nb = nbformat.read(path, as_version=4)
     idx = None
     if prelude:
-        idx = next(i for i, c in enumerate(nb.cells) if c.cell_type == "code") + 1   # 학번 셀 바로 뒤
-        nb.cells.insert(idx, new_code_cell(prelude))
+        first = next(c for c in nb.cells if c.cell_type == "code")
+        if "#@param" in first.source:                      # 준비 셀 안의 학번 · 이름 칸
+            import re as _r
+            for key in ("학번", "이름"):
+                m = _r.search(key + r'\s*=\s*"([^"]*)"', prelude)
+                if m:
+                    first.source = _r.sub(key + r' = ""(\s*#@param)', key + f' = "{m.group(1)}"' + r'\1', first.source, count=1)
+        else:
+            idx = next(i for i, c in enumerate(nb.cells) if c.cell_type == "code") + 1
+            nb.cells.insert(idx, new_code_cell(prelude))
     client = NotebookClient(nb, timeout=timeout, kernel_name=kernel, resources={"metadata": {"path": cwd}}, allow_errors=True)
     client.execute()
     if idx is not None:
@@ -447,8 +458,15 @@ def strip_outputs(path):
 
 
 def _check_lines(nb):
-    return [o["text"].strip() for c in nb.cells if c.cell_type == "code" and c.source.startswith("check(")
-            for o in c.get("outputs", []) if o.get("output_type") == "stream"]
+    """문항마다 나온 ✅/❌/⚠️ 줄 (SQL 셀에서 자동으로, 또는 check() 셀에서)"""
+    out = []
+    for c in nb.cells:
+        if c.cell_type != "code":
+            continue
+        for o in c.get("outputs", []):
+            if o.get("output_type") == "stream" and o.get("name") == "stdout":
+                out += [l.strip() for l in o["text"].splitlines() if l.startswith(("✅", "❌", "⚠️"))]
+    return out
 
 
 def _intended(src):
