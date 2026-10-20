@@ -102,6 +102,8 @@ def _after_cell(result):
         s = line.strip()
         if s.startswith("--"):
             parts = s[2:].split()
+            if parts and _re.match(r"^\[\d+번\]$", parts[0]):      # 수업용 셀 번호 [12번] 은 건너뜀
+                parts = parts[1:]
             tag = parts[0] if parts and not parts[0].startswith("[") else None
             break
         if s:

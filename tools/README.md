@@ -52,6 +52,7 @@ python3 tools/build_aact_mini.py --snapshot data/<받은파일>.zip
 | `nb_assign.py` | 과제 공용: 질환 목록 15개와 학번 기반 배정 준비 셀 |
 | `build_nb_w7.py` · `build_nb_w8.py` | 7 · 8주차 실습 노트북 |
 | `build_nb_a1.py` · `build_nb_a2.py` | 과제 1 · 과제 2 |
+| `number_cells.py` | 수업용 셀 번호 `[1번]`, `[2번]` … 를 코드 셀에 붙임. **모든 빌드가 끝난 뒤 마지막에 실행** |
 
 각 빌드는 **정답본을 실제로 실행해 모든 `check` 가 ✅ 인지 확인**한 뒤에만 저장합니다.
 학생용은 출력이 지워진 상태, 교수자용(`notebooks/instructor/`)은 실행 결과가 포함된 상태입니다.
