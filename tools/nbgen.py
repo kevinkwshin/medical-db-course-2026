@@ -213,6 +213,7 @@ if "google.colab" in sys.modules:           # Colab 에서만 설치 (수업에�
 
 import duckdb
 _pd.set_option("display.max_colwidth", 60)
+_pd.set_option("display.max_columns", None)     # SELECT * 로 열 이름을 볼 때 모든 열을 보여 줌
 %load_ext sql
 %config SqlMagic.autopandas = True
 %config SqlMagic.displaylimit = 30
