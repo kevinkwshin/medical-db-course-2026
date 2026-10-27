@@ -15,7 +15,7 @@ ClinicalTrials.gov 임상시험 등록 자료(AACT)에서 2015~2024년 시작 �
 | <sub>9주차</sub> | <sub>**과제 1**</sub> | <sub>일반적인 SQL 사용법 — 잘못된 SQL 12개 고치기 (조회 · 집계 · JOIN) · 해석 · **제출기한 2026-11-10**</sub> | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/과제1.ipynb) |
 | <sub>10주차</sub> | <sub>실습</sub> | <sub>데이터 수정 · 트랜잭션 · 뷰</sub> | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/10_실습_데이터수정.ipynb) |
 | <sub>12주차</sub> | <sub>실습</sub> | <sub>데이터에서 나오는 오류 찾기</sub> | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/12_실습_오류찾기.ipynb) |
-| <sub>13주차</sub> | <sub>**과제 2**</sub> | <sub>당뇨병 임상시험 분석 — 변수 찾기 → 표 연결 → 통계 (잘못된 SQL 6개 고치기) · 결과표 · 해석</sub> | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/과제2.ipynb) |
+| <sub>13주차</sub> | <sub>**과제 2**</sub> | <sub>당뇨병 임상시험 분석 — 변수 찾기 → 표 연결 → 통계 (잘못된 SQL 6개 고치기) · 결과표 · 해석 · **제출기한 2026-12-07(월)**</sub> | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/과제2.ipynb) |
 
 > Colab 배지를 **새 창**으로 열려면 배지에서 **마우스 오른쪽 버튼 → 새 창에서 링크 열기**를 누르세요.
 >
