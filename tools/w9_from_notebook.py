@@ -108,8 +108,8 @@ def move_y(t, startswith_or_name, y):
 
 
 def agenda(t):
-    """오늘의 순서 3번: '병원 SQL 사례  실제로 이렇게 씁니다' → 'SQL 예제' (노트북 3절 제목)"""
-    set_run(t, "병원 SQL 사례", "SQL 예제")
+    """오늘의 순서 3번: '병원 SQL 사례  실제로 이렇게 씁니다' → '병원에서 활용하는 SQL 예제' (노트북 3절 제목)"""
+    set_run(t, "병원 SQL 사례", "병원에서 활용하는 SQL 예제")
     m = [x for x in t.iter(A + "t") if x.text and x.text.strip() == "실제로 이렇게 씁니다"
          and x.getparent().getparent().find(A + "r") is not x.getparent()]   # 같은 문단의 둘째 run
     assert len(m) == 1, ("agenda", len(m))
@@ -177,8 +177,8 @@ def edit(i, t):
         rep(t, "  4단계 분석표의 행 수가", "4단계 분석표의 행 수가")
         move_y(t, "Q 6", 1600000)
         move_y(t, "4단계 분석표의 행 수가", 1790000)
-    if i == 18:                                    # 3절 구분: 병원 SQL 사례 → SQL 예제
-        set_run(t, "3. 병원 SQL 사례", "3. SQL 예제")
+    if i == 18:                                    # 3절 구분: 병원 SQL 사례 → 병원에서 활용하는 SQL 예제
+        set_run(t, "3. 병원 SQL 사례", "3. 병원에서 활용하는 SQL 예제")
         del_shape(t, "실제로 이렇게 씁니다")
     if i == 19:                                    # 병원에서 SQL을 쓰는 일
         del_shape(t, "실제로 이런 숫자를 SQL로 뽑습니다")
