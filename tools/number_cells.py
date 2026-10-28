@@ -57,5 +57,6 @@ def number(path):
 if __name__ == "__main__":
     paths = sorted(glob.glob(os.path.join(ROOT, "notebooks", "*.ipynb")) +
                    glob.glob(os.path.join(ROOT, "notebooks", "instructor", "*.ipynb")))
+    paths = [p for p in paths if not os.path.basename(p).startswith("과제")]   # 과제에는 셀 번호 없음 (강사 요청 2026-10-28)
     for p in paths:
         print(f"{number(p):4d} cells  {os.path.relpath(p, ROOT)}")
