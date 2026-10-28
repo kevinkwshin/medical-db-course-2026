@@ -342,7 +342,7 @@ class NB:
 - 셀은 **위에서부터 차례로** 실행합니다 (▶ 또는 `Shift + Enter`). `%%sql` 아래의 `-- Q1` · `-- S1` 같은 문항 이름 줄은 지우지 마세요.
 - 문항 SQL 을 실행하면 결과 아래에 **✅ / ❌** 가 바로 나옵니다.
 - 오류가 나면 **`… Error:` 로 시작하는 줄**만 읽으면 됩니다.
-""" + ("- ✏️ 칸은 두 번 눌러 `→` 뒤에 한 줄로 적습니다.\n" if self.assignment else "")
+""" + ("- ✏️ 칸은 두 번 눌러 `→` 뒤에 적습니다.\n" if self.assignment and self.kind != "과제1" else "")   # 과제1 은 ✏️ 칸 없음
   + (("\n" + note.strip("\n")) if note else ""))
         src = setup_source(self.assignment, self.kind) + '\nANSWERS = _load_answers("__ANSWERS__")   # 자동 확인용 (정답 SQL 은 없음)\n'
         if self.assignment:          # 학번 · 이름 칸을 준비 셀 맨 위에 (Colab 양식)
