@@ -58,8 +58,8 @@ def edit_overview(t):          # INSERT · UPDATE · DELETE (개요)
 
 def edit_where(t):             # WHERE는 바꿀 대상을 정합니다
     set_run(t, " 환자", " studies_copy", "TextBox 8")
-    set_run(t, " 진료과 = '내과';", " overall_status = 'COMPLETED';", "TextBox 8")
-    set_run(t, "모든 환자의 진료과가 내과로 바뀝니다", "5개 시험이 모두 COMPLETED 로 바뀝니다")
+    set_run(t, " 진료과 = '내과';", " overall_status = 'TERMINATED';", "TextBox 8")
+    set_run(t, "모든 환자의 진료과가 내과로 바뀝니다", "5개 시험이 모두 TERMINATED 로 바뀝니다")
     tb = sp(t, "TextBox 12")
     for x in [x for x in tb.iter(A + "t") if x.text == " 환자"]:
         x.text = " studies_copy"
