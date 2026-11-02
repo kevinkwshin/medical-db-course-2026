@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""10강 슬라이드: 예시를 aact_mini 연습_시험 5행으로 바꾸고, 9강처럼 '질문 · SQL · 결과 표 · 확인' 슬라이드 추가 (2026-11-02).
+"""10강 슬라이드: 예시를 aact_mini studies_copy 5행으로 바꾸고, 9강처럼 '질문 · SQL · 결과 표 · 확인' 슬라이드 추가 (2026-11-02).
 
 - 글 고침: 'INSERT · UPDATE · DELETE'(개요) · 'WHERE는 바꿀 대상을 정합니다' · '여기까지 정리' · 'COMMIT과 ROLLBACK'
-  의 환자 예시 → 연습_시험 예시
+  의 환자 예시 → studies_copy 예시
 - 추가: 9강 '2단계 — 값 살펴보기' 슬라이드 모양을 복제해 5장
     연습용 표 만들기 (참고 '연습용 사본 만들기' 뒤) · INSERT · UPDATE · DELETE (개요 뒤) · ROLLBACK 해 보기 (COMMIT과 ROLLBACK 뒤)
 - 숫자는 노트북 10 과 같은 SQL 로 aact_mini 에서 나온 값 (tools/build_nb_w10.py 가 assert)
@@ -44,30 +44,30 @@ def set_run(t, old, new, shape=None):
     m[0].text = new
 
 
-# ---------------------------------------------------------------- 1) 있는 슬라이드의 환자 예시 → 연습_시험
+# ---------------------------------------------------------------- 1) 있는 슬라이드의 환자 예시 → studies_copy
 def edit_overview(t):          # INSERT · UPDATE · DELETE (개요)
-    set_run(t, " 환자", " 연습_시험", "TextBox 7")
+    set_run(t, " 환자", " studies_copy", "TextBox 7")
     set_run(t, "  (환자ID, 환자명, 생년월일)", "  (nct_id, overall_status, enrollment)", "TextBox 7")
     set_run(t, " ('P100', '김OO', '1958-03-11');", " ('NCT99999999', 'RECRUITING', 50);", "TextBox 7")
-    set_run(t, " 환자", " 연습_시험", "TextBox 10")
+    set_run(t, " 환자", " studies_copy", "TextBox 10")
     set_run(t, " 연락처 = '010-9999-8888'", " overall_status = 'COMPLETED'", "TextBox 10")
     set_run(t, " 환자ID = 'P100';", " nct_id = 'NCT00623389';", "TextBox 10")
-    set_run(t, " 환자", " 연습_시험", "TextBox 13")
+    set_run(t, " 환자", " studies_copy", "TextBox 13")
     set_run(t, " 환자ID = 'P100';", " overall_status = 'WITHDRAWN';", "TextBox 13")
 
 
 def edit_where(t):             # WHERE는 바꿀 대상을 정합니다
-    set_run(t, " 환자", " 연습_시험", "TextBox 8")
+    set_run(t, " 환자", " studies_copy", "TextBox 8")
     set_run(t, " 진료과 = '내과';", " overall_status = 'COMPLETED';", "TextBox 8")
     set_run(t, "모든 환자의 진료과가 내과로 바뀝니다", "5개 시험이 모두 COMPLETED 로 바뀝니다")
     tb = sp(t, "TextBox 12")
     for x in [x for x in tb.iter(A + "t") if x.text == " 환자"]:
-        x.text = " 연습_시험"
+        x.text = " studies_copy"
     for x in [x for x in tb.iter(A + "t") if x.text == " 진료과 = '외과';"]:
         x.text = " overall_status = 'WITHDRAWN';"
     set_run(t, " 진료과 = '내과'", " overall_status = 'TERMINATED'", "TextBox 12")
     set_run(t, "조건에 맞는 환자만 바뀝니다", "조건에 맞는 3개 시험만 바뀝니다")
-    set_run(t, "예시의 환자 표는 설명을 위한 가상 표입니다", "연습_시험 은 studies 5행 사본입니다")
+    set_run(t, "예시의 환자 표는 설명을 위한 가상 표입니다", "studies_copy 는 studies 5행 사본입니다")
 
 
 def edit_summary(t):           # 여기까지 정리
@@ -79,7 +79,7 @@ def edit_commit(t):            # COMMIT과 ROLLBACK
     tb = sp(t, "TextBox 7")
     upd = [p for p in tb.iter(A + "p") if "".join(x.text or "" for x in p.iter(A + "t")).startswith("UPDATE")]
     assert len(upd) == 1 and [r.findtext(A + "t") for r in upd[0].findall(A + "r")] == ["UPDATE", " ", "환자"]
-    upd[0].findall(A + "r")[2].find(A + "t").text = "연습_시험"
+    upd[0].findall(A + "r")[2].find(A + "t").text = "studies_copy"
     set_run(t, "연락처 ", "overall_status ", "TextBox 7")
     set_run(t, "= '010-9999-8888'", "= 'COMPLETED'", "TextBox 7")
     tb = sp(t, "TextBox 7")
@@ -208,38 +208,38 @@ def build(template, title, question, sql_lines, hl_lines, label, header, rows, h
 W3 = [1600000, 1650000, 1474400]
 NEW = {
     "make": dict(title="연습용 표 만들기 — studies 에서 5행만",
-                 question="원본(studies)은 그대로 두고, 고치는 연습은 어디서 하나?",
-                 sql_lines=["CREATE TEMP TABLE 연습_시험 AS", "SELECT nct_id, overall_status, enrollment",
+                 question="원본(studies)은 그대로 두고, 연습하는 테이블 만들기",
+                 sql_lines=["CREATE TEMP TABLE studies_copy AS", "SELECT nct_id, overall_status, enrollment",
                             "FROM studies", "ORDER BY nct_id LIMIT 5;"], hl_lines={0},
-                 label="결과 (SELECT * FROM 연습_시험 ORDER BY nct_id)", header=HEAD, rows=[list(r) for r in ORIG], hl_rows=set(), widths=W3,
+                 label="결과 (SELECT * FROM studies_copy ORDER BY nct_id)", header=HEAD, rows=[list(r) for r in ORIG], hl_rows=set(), widths=W3,
                  notes=[("원본", "studies 는 그대로 (읽기 전용)"),
-                        ("사본", "연습_시험 은 노트북을 닫으면 사라짐. 다음 장부터 매번 이 5행에서 시작")]),
+                        ("사본", "studies_copy 는 노트북을 닫으면 사라짐. 다음 장부터 매번 이 5행에서 시작")]),
     "insert": dict(title="INSERT — 새 행 추가하기",
-                   question="연습_시험 에 새 시험 한 건을 넣으면?",
-                   sql_lines=["INSERT INTO 연습_시험", "  (nct_id, overall_status, enrollment)", "VALUES ('NCT99999999', 'RECRUITING', 50);", "SELECT * FROM 연습_시험 ORDER BY nct_id;"],
+                   question="studies_copy 에 새 시험 한 건을 넣으면?",
+                   sql_lines=["INSERT INTO studies_copy", "  (nct_id, overall_status, enrollment)", "VALUES ('NCT99999999', 'RECRUITING', 50);", "SELECT * FROM studies_copy ORDER BY nct_id;"],
                    hl_lines={0, 1, 2}, label="결과", header=HEAD,
                    rows=[list(r) for r in ORIG] + [["NCT99999999", "RECRUITING", "50"]], hl_rows={5}, widths=W3,
                    notes=[("확인", "5행 → 6행. 맨 아래에 새 행이 생김"),
                           ("VALUES", "열 순서(nct_id, overall_status, enrollment)대로 값을 적음")]),
     "update": dict(title="UPDATE — 값 바꾸기",
                    question="NCT00623389 시험의 상태만 COMPLETED 로 바꾸면?",
-                   sql_lines=["UPDATE 연습_시험", "SET overall_status = 'COMPLETED'", "WHERE nct_id = 'NCT00623389';",
-                              "SELECT * FROM 연습_시험 ORDER BY nct_id;"], hl_lines={1, 2}, label="결과", header=HEAD,
+                   sql_lines=["UPDATE studies_copy", "SET overall_status = 'COMPLETED'", "WHERE nct_id = 'NCT00623389';",
+                              "SELECT * FROM studies_copy ORDER BY nct_id;"], hl_lines={1, 2}, label="결과", header=HEAD,
                    rows=[list(r) for r in ORIG[:3]] + [["NCT00623389", "COMPLETED", "10"]] + [list(ORIG[4])], hl_rows={3},
                    widths=W3,
                    notes=[("확인", "WHERE 에 맞는 1행만 바뀜 (RECRUITING → COMPLETED)"),
                           ("SET", "바꿀 열과 새 값, WHERE 는 바꿀 행")]),
     "delete": dict(title="DELETE — 행 지우기",
                    question="철회된(WITHDRAWN) 시험을 지우면?",
-                   sql_lines=["DELETE FROM 연습_시험", "WHERE overall_status = 'WITHDRAWN';", "SELECT * FROM 연습_시험 ORDER BY nct_id;"],
+                   sql_lines=["DELETE FROM studies_copy", "WHERE overall_status = 'WITHDRAWN';", "SELECT * FROM studies_copy ORDER BY nct_id;"],
                    hl_lines={0, 1}, label="결과", header=HEAD, rows=[list(ORIG[1]), list(ORIG[3])], hl_rows=set(), widths=W3,
                    notes=[("확인", "WITHDRAWN 3행이 지워지고 2행이 남음"),
                           ("먼저 세기", "지우기 전에 같은 WHERE 로 SELECT COUNT(*) 를 하면 3")]),
     "rollback": dict(title="ROLLBACK 해 보기 — 실수를 되돌리기",
                      question="BEGIN 뒤에 WHERE 없는 UPDATE 를 했다면?",
-                     sql_lines=["BEGIN;", "UPDATE 연습_시험", "SET overall_status = 'COMPLETED';   -- WHERE 없음",
-                                "SELECT * FROM 연습_시험 ORDER BY nct_id;   -- ① 모두 COMPLETED", "ROLLBACK;",
-                                "SELECT * FROM 연습_시험 ORDER BY nct_id;   -- ② 처음대로"], hl_lines={4},
+                     sql_lines=["BEGIN;", "UPDATE studies_copy", "SET overall_status = 'COMPLETED';   -- WHERE 없음",
+                                "SELECT * FROM studies_copy ORDER BY nct_id;   -- ① 모두 COMPLETED", "ROLLBACK;",
+                                "SELECT * FROM studies_copy ORDER BY nct_id;   -- ② 처음대로"], hl_lines={4},
                      label="결과 (overall_status)", header=["nct_id", "① UPDATE 뒤", "② ROLLBACK 뒤"],
                      rows=[[r[0], "COMPLETED", r[1]] for r in ORIG], hl_rows=set(), widths=[1500000, 1500000, 1724400],
                      notes=[("① UPDATE 뒤", "WHERE 를 빠뜨려 5행 모두 COMPLETED"),
