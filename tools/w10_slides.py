@@ -127,6 +127,8 @@ def build(template, title, question, sql_lines, hl_lines, label, header, rows, h
         hl = i in hl_lines
         pos, pieces = 0, []
         code, cmt = (line.split("--", 1)[0], "--" + line.split("--", 1)[1]) if "--" in line else (line, "")
+        if cmt:                                # 주석 앞 공백은 강조하지 않음
+            cmt, code = code[len(code.rstrip()):] + cmt, code.rstrip()
         for m in KW.finditer(code):
             if m.start() > pos:
                 pieces.append((code[pos:m.start()], False))
