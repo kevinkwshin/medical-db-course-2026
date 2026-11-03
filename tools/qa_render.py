@@ -10,7 +10,7 @@ shutil.copy(pptx, src)
 if os.path.exists(pdf): os.remove(pdf)
 script = f'''tell application "Microsoft PowerPoint"
 	open POSIX file "{src}"
-	set pres to active presentation
+	set pres to presentation "{name}.pptx"	-- 이름으로: 강사가 연 덱을 닫지 않게
 	save pres in (POSIX file "{pdf}") as save as PDF
 	delay 3
 	close pres saving no
