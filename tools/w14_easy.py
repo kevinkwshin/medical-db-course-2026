@@ -84,6 +84,7 @@ def same_thing(t):
             [[("초록  ", {"b": True, "color": GREEN_L}), ("청구에 쓰는 진단 코드는 병원끼리 같습니다", {})],
              [("빨강  ", {"b": True, "color": RED_L}), ("검사 코드 · 간호 평가 도구 · 표 이름은 병원마다 다릅니다", {})]],
             fill=YEL_F, line=YEL_L, sz=1600, align="l", name="Legend")
+    credit(t, "원내 코드 · 표 이름은 설명을 위한 예시입니다", X0, 6580000, X1 - X0)
 
 
 def aligned(t):
