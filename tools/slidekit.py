@@ -175,6 +175,89 @@ def move_y(t, name, y):
     shape(t, name).find(f".//{A}off").set("y", str(int(y)))
 
 
+FONT = "Malgun Gothic"
+
+
+def _next_id(t):
+    return max(int(e.get("id")) for e in t.iter(P + "cNvPr")) + 1
+
+
+def _spTree(t):
+    return t.find(f"{P}cSld/{P}spTree")
+
+
+def _run(text, sz, b=False, color="000000"):
+    r = etree.Element(A + "r")
+    pr = etree.SubElement(r, A + "rPr", lang="ko-KR", altLang="en-US", sz=str(sz), b="1" if b else "0", dirty="0")
+    f = etree.SubElement(pr, A + "solidFill"); etree.SubElement(f, A + "srgbClr", val=color)
+    for tag in ("latin", "ea", "cs"):
+        etree.SubElement(pr, A + tag, typeface=FONT)
+    etree.SubElement(r, A + "t").text = text
+    return r
+
+
+def add_box(t, x, y, cx, cy, lines, fill="FFFFFF", line="BFBFBF", sz=1600, color="000000", bold=False,
+            geom="roundRect", align="ctr", anchor="ctr", name="Box", lw=12700, inset=72000):
+    """상자 하나. lines = ['글', [('굵은 글', {'b': True, 'color': 'C00000', 'sz': 1800}), (' 보통 글', {})], …]"""
+    sp = etree.SubElement(_spTree(t), P + "sp")
+    nv = etree.SubElement(sp, P + "nvSpPr")
+    etree.SubElement(nv, P + "cNvPr", id=str(_next_id(t)), name=name)
+    etree.SubElement(nv, P + "cNvSpPr"); etree.SubElement(nv, P + "nvPr")
+    pr = etree.SubElement(sp, P + "spPr")
+    xf = etree.SubElement(pr, A + "xfrm")
+    etree.SubElement(xf, A + "off", x=str(int(x)), y=str(int(y))); etree.SubElement(xf, A + "ext", cx=str(int(cx)), cy=str(int(cy)))
+    g = etree.SubElement(pr, A + "prstGeom", prst=geom); etree.SubElement(g, A + "avLst")
+    if fill:
+        f = etree.SubElement(pr, A + "solidFill"); etree.SubElement(f, A + "srgbClr", val=fill)
+    else:
+        etree.SubElement(pr, A + "noFill")
+    ln = etree.SubElement(pr, A + "ln", w=str(lw))
+    if line:
+        f = etree.SubElement(ln, A + "solidFill"); etree.SubElement(f, A + "srgbClr", val=line)
+    else:
+        etree.SubElement(ln, A + "noFill")
+    tb = etree.SubElement(sp, P + "txBody")
+    bp = etree.SubElement(tb, A + "bodyPr", wrap="square", lIns=str(inset), tIns="36000", rIns=str(inset), bIns="36000", anchor=anchor, rtlCol="0")
+    etree.SubElement(bp, A + "noAutofit")
+    etree.SubElement(tb, A + "lstStyle")
+    for ln_ in lines or [[]]:                      # 글 없는 도형(화살표)도 문단 하나는 있어야 함
+        p_ = etree.SubElement(tb, A + "p")
+        etree.SubElement(p_, A + "pPr", algn=align)
+        runs = [(ln_, {})] if isinstance(ln_, str) else ln_
+        for txt, o in runs:
+            p_.append(_run(txt, o.get("sz", sz), o.get("b", bold), o.get("color", color)))
+    return sp
+
+
+def add_arrow(t, x, y, cx, cy, direction="right", fill="8EA9DB", name="Arrow"):
+    geom = {"right": "rightArrow", "down": "downArrow", "left": "leftArrow"}[direction]
+    return add_box(t, x, y, cx, cy, [], fill=fill, line=None, geom=geom, name=name)
+
+
+def set_fill(s, fill=None, line=None):
+    pr = s.find(P + "spPr")
+    if fill:
+        for f in pr.findall(A + "solidFill"):
+            f.find(A + "srgbClr").set("val", fill)
+    if line:
+        c = pr.find(f"{A}ln/{A}solidFill/{A}srgbClr")
+        if c is not None:
+            c.set("val", line)
+
+
+def remove_shapes(t, keep):
+    """keep 에 이름이 없는 도형 · 표 · 그림 · 선을 모두 지움"""
+    tree = _spTree(t)
+    for el in list(tree):
+        nv = el.find(f".//{P}cNvPr")
+        if el.tag in (P + "sp", P + "graphicFrame", P + "pic", P + "cxnSp", P + "grpSp") and (nv is None or nv.get("name") not in keep):
+            tree.remove(el)
+
+
+def hide(t):
+    t.set("show", "0")
+
+
 class Deck:
     def __init__(self, src):
         self.z = zipfile.ZipFile(src)
@@ -238,6 +321,40 @@ class Deck:
         ov = etree.SubElement(self.ct, CT + "Override"); ov.set("PartName", f"/{part}"); ov.set("ContentType", SLIDE_CT)
         return s
 
+    def add_picture(self, sid, path, x, y, cx, cy, name="Picture", descr=""):
+        """슬라이드에 그림 넣기 (ppt/media 에 파일 · 슬라이드 rels · Content_Types 기본값)"""
+        ext = path.rsplit(".", 1)[1].lower()
+        ext = "jpeg" if ext == "jpg" else ext
+        names = set(self.z.namelist()) | set(self.add)
+        k = 1
+        while f"ppt/media/slidekit{k}.{ext}" in names:
+            k += 1
+        media = f"ppt/media/slidekit{k}.{ext}"
+        self.add[media] = open(path, "rb").read()
+        if not any(d_.get("Extension", "").lower() == ext for d_ in self.ct.findall(CT + "Default")):
+            etree.SubElement(self.ct, CT + "Default", Extension=ext, ContentType=f"image/{ext}")
+        p = self.path(sid)
+        relp = p.replace("slides/", "slides/_rels/") + ".rels"
+        rels = etree.fromstring(self.rels(sid))
+        rid = f"rId{max([int(r.get('Id')[3:]) for r in rels if r.get('Id', '').startswith('rId')] + [0]) + 1}"
+        etree.SubElement(rels, PR + "Relationship", Id=rid, Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image",
+                         Target=f"../media/slidekit{k}.{ext}")
+        self.add[relp] = dump(rels)
+        t = self.tree(sid)
+        pic = etree.SubElement(_spTree(t), P + "pic")
+        nv = etree.SubElement(pic, P + "nvPicPr")
+        etree.SubElement(nv, P + "cNvPr", id=str(_next_id(t)), name=name, descr=descr)
+        c = etree.SubElement(nv, P + "cNvPicPr"); etree.SubElement(c, A + "picLocks", noChangeAspect="1")
+        etree.SubElement(nv, P + "nvPr")
+        bf = etree.SubElement(pic, P + "blipFill")
+        etree.SubElement(bf, A + "blip", {R + "embed": rid})
+        st = etree.SubElement(bf, A + "stretch"); etree.SubElement(st, A + "fillRect")
+        pr = etree.SubElement(pic, P + "spPr")
+        xf = etree.SubElement(pr, A + "xfrm")
+        etree.SubElement(xf, A + "off", x=str(int(x)), y=str(int(y))); etree.SubElement(xf, A + "ext", cx=str(int(cx)), cy=str(int(cy)))
+        g = etree.SubElement(pr, A + "prstGeom", prst="rect"); etree.SubElement(g, A + "avLst")
+        return pic
+
     def delete(self, sid):
         p = self.path(sid)
         relp = p.replace("slides/", "slides/_rels/") + ".rels"
@@ -267,7 +384,8 @@ class Deck:
             for info in self.z.infolist():
                 if info.filename in self.removed:
                     continue
-                zo.writestr(info, repl.get(info.filename, self.z.read(info.filename)))
+                n = info.filename
+                zo.writestr(info, repl[n] if n in repl else self.add[n] if n in self.add else self.z.read(n))
             for name, data in list(repl.items()) + list(self.add.items()):
                 if name not in old and name not in self.removed:
                     zo.writestr(zipfile.ZipInfo(name), data, compress_type=zipfile.ZIP_DEFLATED)
