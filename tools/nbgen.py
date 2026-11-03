@@ -15,6 +15,9 @@ from nbformat.v4 import new_notebook, new_markdown_cell, new_code_cell
 
 DB_NAME = "aact_mini.duckdb"
 DATA_URL = "https://raw.githubusercontent.com/kevinkwshin/medical-db-course-2026/main/data/aact_mini.duckdb.gz"
+# 11강부터 쓰는 가상 병원 CDW (tools/build_hospital_mini.py, 2026-11-03)
+DBS = {"aact": (DB_NAME, DATA_URL, "약 50MB, 1분 내외"),
+       "hospital": ("hospital_mini.duckdb", "https://raw.githubusercontent.com/kevinkwshin/medical-db-course-2026/main/data/hospital_mini.duckdb.gz", "약 1MB")}
 KERNEL = "py39"
 
 # 과제 분석 질환: 모든 학생이 같은 질환(제2형 당뇨병)을 분석합니다 (슬라이드 '과제 1 안내' · '과제 2 안내').
@@ -44,6 +47,18 @@ DATA_COLS = {
     "countries": "name, removed (TRUE 면 등록 후 빠진 국가)",
     "facilities": "name, country",
 }
+
+HOSP_TABLES = [   # 표, 한 행, 기본키, 외래키, 주로 쓰는 열 (11강 슬라이드와 같게)
+    ("환자", "환자 1명", "환자ID", "—", "성별, 생년월일, 사망일"),
+    ("입원", "입원 1건", "입원ID", "`환자ID` → 환자, `병동` → 병동", "병동, 진료과, 입원일, 퇴원일, 퇴원형태, 계획입원, 보험유형"),
+    ("진단", "진단 1건", "진단ID", "`입원ID` → 입원", "진단코드(KCD), 주진단여부"),
+    ("검사", "검사 1건", "검사ID", "`환자ID` → 환자", "검사일, 검사명, 결과값"),
+    ("병동", "병동 1곳", "병동", "—", "구분, 주진료과, 병상수"),
+    ("병동일보", "병동 × 날짜", "병동 + 날짜", "`병동` → 병동", "재원환자수(자정 기준), 입원환자수, 퇴원환자수"),
+    ("근무", "병동 × 날짜 × 근무조", "병동 + 근무일 + 근무조", "`병동` → 병동", "근무조(D · E · N), 간호사수"),
+    ("진료비", "입원 × 항목", "진료비ID", "`입원ID` → 입원", "항목, 금액, 급여구분"),
+    ("낙상", "낙상 1건", "낙상ID", "`입원ID` → 입원", "발생일, 근무조, 손상정도"),
+]
 
 # ---------------------------------------------------------------- 채점 지문 (빌더 · 노트북 공용)
 GRADER_CORE = r'''
@@ -191,7 +206,7 @@ def 진행확인():
 SETUP_HEAD = r'''#@title ▶ 준비 셀 — 실행만 하세요 (Shift+Enter). 코드는 몰라도 됩니다. { display-mode: "form" }
 import os, sys, urllib.request
 import numpy as _np, pandas as _pd
-DB  = "aact_mini.duckdb"
+DB  = "__DB__"
 URL = "__URL__"
 
 # 로컬(수업 폴더)에서 열었을 때는 ../data/ 의 파일을 사용
@@ -200,7 +215,7 @@ for cand in [DB, os.path.join("..", "data", DB), os.path.join("data", DB)]:
         DB = cand
         break
 else:
-    print("데이터 파일을 내려받습니다 (약 50MB, 1분 내외) ...")
+    print("데이터 파일을 내려받습니다 (__SIZE__) ...")
     import gzip, shutil
     urllib.request.urlretrieve(URL, DB + ".gz")
     with gzip.open(DB + ".gz", "rb") as f_in, open(DB, "wb") as f_out:
@@ -239,7 +254,7 @@ class _OneConnection:
 
 _aact = _OneConnection(conn)
 %sql _aact --alias aact
-'''.replace("__URL__", DATA_URL)
+'''
 
 IDENTITY_SRC = r'''#@title ✏️ 학번과 이름을 입력한 뒤 이 셀을 실행하세요 { display-mode: "form" }
 학번 = ""  #@param {type:"string"}
@@ -264,9 +279,27 @@ def 제출확인():
 '''
 
 
-def setup_source(assignment=False, kind=""):
-    src = SETUP_HEAD + GRADER_CORE + RUNTIME
-    if assignment:
+ASSIGN_PLAIN = r'''
+학번, 이름 = str(globals().get("학번", "")).strip(), str(globals().get("이름", "")).strip()
+if not 학번 or 학번 == "20260000":
+    print("⚠️ 학번이 비어 있습니다. 위 칸에 학번과 이름을 입력하고 이 준비 셀을 다시 실행하세요.")
+else:
+    print(f"연결 완료.  {이름}({학번})")
+
+def 제출확인():
+    """제출 전에 실행: 문항별 결과와 제출 방법을 보여 줍니다."""
+    print(f"제출자: {이름 or '(이름 없음)'} ({학번 or '학번 없음'})")
+    진행확인()
+    print("\n제출: ① Runtime → Run all (오류에서 멈추면 아래 셀을 누르고 Runtime → Run after)  ② File → Download → Download .ipynb  ③ LMS 에 __KIND__.ipynb 제출")
+'''
+
+
+def setup_source(assignment=False, kind="", db="aact"):
+    name, url, size = DBS[db]
+    src = SETUP_HEAD.replace("__DB__", name).replace("__URL__", url).replace("__SIZE__", size) + GRADER_CORE + RUNTIME
+    if assignment and db == "hospital":          # 가상 병원 과제는 질환 배정이 없음
+        src += ASSIGN_PLAIN.replace("__KIND__", kind)
+    elif assignment:
         src += ASSIGN_SRC.replace("__MESH__", json.dumps(MESH, ensure_ascii=False)).replace("__KIND__", kind)
     else:
         src += '\nprint("연결 완료:", DB)\n'
@@ -334,7 +367,7 @@ class NB:
             head += "".join(f"-- {line}\n" for line in comment.split("\n"))
         self.cells.append(new_code_cell(head + template.strip("\n")))
 
-    def setup(self, note=None):
+    def setup(self, note=None, db="aact"):
         self.md("""
 ## 0. 시작하기 전에
 
@@ -344,7 +377,7 @@ class NB:
 - 오류가 나면 **`… Error:` 로 시작하는 줄**만 읽으면 됩니다.
 """ + ("- ✏️ 칸은 두 번 눌러 `→` 뒤에 적습니다.\n" if self.assignment and self.kind != "과제1" else "")   # 과제1 은 ✏️ 칸 없음
   + (("\n" + note.strip("\n")) if note else ""))
-        src = setup_source(self.assignment, self.kind) + '\nANSWERS = _load_answers("__ANSWERS__")   # 자동 확인용 (정답 SQL 은 없음)\n'
+        src = setup_source(self.assignment, self.kind, db) + '\nANSWERS = _load_answers("__ANSWERS__")   # 자동 확인용 (정답 SQL 은 없음)\n'
         if self.assignment:          # 학번 · 이름 칸을 준비 셀 맨 위에 (Colab 양식)
             src = src.replace(src.split("\n", 1)[0],
                               '#@title ✏️ 학번 · 이름을 입력하고 실행하세요 (준비 셀) { display-mode: "form" }\n'
@@ -381,6 +414,23 @@ FROM studies
 JOIN countries
   ON studies.nct_id = countries.nct_id
 WHERE studies.nct_id = 'NCT01795521'""", comment="확인: studies 에서는 1행인 시험이 countries 와 연결하면 국가 수만큼 여러 행이 됩니다")
+
+    def hospital_overview(self, intro=None):
+        """가상 병원 CDW 데이터 구성 (11강 '가상 병원 CDW — 12강부터 쓰는 실습 DB' 와 같은 표)"""
+        rows = "\n".join(f"| `{t}` | {mean} | `{pk}` | {fk} | {cols} |" for t, mean, pk, fk, cols in HOSP_TABLES)
+        self.md(f"""
+## 데이터 구성 — 가상 병원 CDW
+
+{intro or "실제 병원 자료가 아니라 수업용으로 만든 가상 자료입니다 (2024년 · 병동 6곳). 열 이름이 생각나지 않으면 이 표로 돌아오세요."}
+
+| 표 | 한 행이 뜻하는 것 | 기본키 (PK) | 외래키 (FK) | 주로 쓰는 열 |
+|---|---|---|---|---|
+{rows}
+
+- 환자 1명이 여러 번 입원하면 `입원` 표에 여러 행이 있습니다 (1 : N). 입원 1건에 진료비 · 진단 · 낙상도 여러 행일 수 있습니다.
+- 표를 이을 때는 `ON 낙상.입원ID = 입원.입원ID` 처럼 외래키와 기본키를 맞춥니다.
+- 2024-12-31 에 아직 재원 중인 입원은 `퇴원일` 이 비어 있습니다(NULL). 환자ID 는 앞자리 0 이 있는 글자입니다.
+""")
 
     # ---- 정답 등록
     def register(self, name, df, hint="", ordered=False, optional=False):
