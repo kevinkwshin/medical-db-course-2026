@@ -17,6 +17,7 @@
   진료비    입원 × 항목     진료비ID · 입원ID · 항목 · 금액(원) · 급여구분
   낙상      낙상 1건       낙상ID · 입원ID · 발생일 · 근무조 · 손상정도
   검사      검사 1건       검사ID · 환자ID · 검사일 · 검사명 · 결과값 (3% NULL, 일부는 퇴원 뒤 외래 검사)
+  수술      수술 1건       수술ID · 입원ID · 진료과 · 집도의 · 수술명 · 수술일 · 시작시각 · 종료시각 (12강 수술시간 예제, 2026-11-16 추가)
 
 일부러 넣은 실제 병원 자료의 모습 (12 · 13강 · 과제 2 에서 씀)
   - 환자ID 는 '0012345' 처럼 앞자리 0 이 있는 글자 (엑셀에서 숫자로 바뀌면 0 이 사라짐)
@@ -286,6 +287,54 @@ for r in A.itertuples():
 LABS = pd.DataFrame(labs, columns=["환자ID", "검사일", "검사명", "결과값"]).sort_values(["검사일", "환자ID", "검사명"]).reset_index(drop=True)
 LABS.insert(0, "검사ID", range(1, len(LABS) + 1))
 
+# ---------------------------------------------------------------- 수술 (외과 · 정형외과 수술 입원 1건에 1번) — 따로 둔 난수 (2026-11-16, 12강 수술시간 예제)
+rng3 = np.random.default_rng(SEED + 2)        # 앞의 표들이 바뀌지 않게
+# 주진단 → 수술명 · 평균 수술시간(분) · 표준편차 · 집도의 비율 (의사A · B 는 위 · 대장 절제술처럼 오래 걸리는 수술을 맡음)
+OPS = {
+    "K80.2": ("복강경 담낭절제술", 70, 14, {"의사A": .2, "의사B": .2, "의사C": .3, "의사D": .3}),
+    "K35.8": ("충수절제술", 55, 12, {"의사A": .05, "의사B": .05, "의사C": .45, "의사D": .45}),
+    "K40.9": ("서혜부 탈장 수술", 60, 12, {"의사A": .1, "의사B": .1, "의사C": .4, "의사D": .4}),
+    "K56.6": ("장유착 박리술", 120, 30, {"의사A": .2, "의사B": .2, "의사C": .3, "의사D": .3}),
+    "C16.9": ("위절제술", 200, 35, {"의사A": .5, "의사B": .5}),
+    "C18.9": ("대장절제술", 180, 35, {"의사A": .5, "의사B": .5}),
+    "S72.0": ("고관절 골절 수술", 100, 20, {"의사E": .4, "의사F": .3, "의사G": .3}),
+    "M17.1": ("무릎 인공관절 치환술", 110, 18, {"의사E": .5, "의사F": .5}),
+    "M48.0": ("척추 감압술", 150, 30, {"의사G": 1.0}),
+    "S82.8": ("하퇴 골절 수술", 95, 22, {"의사E": .3, "의사F": .3, "의사G": .4}),
+    "M16.1": ("고관절 인공관절 치환술", 120, 20, {"의사E": .5, "의사F": .5}),
+}
+SLOW = {"의사C": 1.35}                          # 같은 수술도 더 오래 걸리는 집도의 (12강 '같은 수술끼리 비교')
+surg = set(COST.loc[COST["항목"] == "재료대", "입원ID"])        # 진료비에 재료대가 있는 입원 = 수술한 입원
+ops = []
+for r in A[A["입원ID"].isin(surg)].itertuples():
+    name, mu, sd, docs = OPS[r.주진단]
+    er = r.입원경로 == "응급"
+    day = min(r.입원일 + dt.timedelta(days=0 if er else 1), r.퇴원일 if pd.notna(r.퇴원일) else Y1)
+    doc = list(docs)[rng3.choice(len(docs), p=np.array(list(docs.values())) / sum(docs.values()))]
+    z = float(rng3.normal())
+    want = int(rng3.integers(8 * 60, 20 * 60)) if er else 8 * 60      # 응급은 저녁 8시 전 아무 때나, 정규 수술은 아침부터 차례로
+    if day >= Y0:                                                     # 2023년에 한 수술은 2024년 자료에 없음
+        ops.append(dict(입원ID=r.입원ID, 진료과=r.진료과, 집도의=doc, 수술명=name, 수술일=day, er=er, want=want, z=z, mu=mu, sd=sd, docs=list(docs)))
+OPS_DF = pd.DataFrame(ops).sort_values(["수술일", "er", "want", "입원ID"]).reset_index(drop=True)
+dur = lambda o, doc: int(round(max(o.mu * SLOW.get(doc, 1) + o.sd * o.z, 0.5 * o.mu)))
+free, plan = {}, []                           # (집도의, 수술일) → 앞 수술이 끝난 시각(분)
+for o in OPS_DF.itertuples():                 # 집도의마다 하루에 한 수술씩 차례로 (앞 수술이 끝나고 30분 뒤, 10분 단위)
+    slot = lambda doc: max(o.want, -(-(free.get((doc, o.수술일), 0) + 30) // 10) * 10)
+    doc = o.집도의
+    if slot(doc) + dur(o, doc) > 22 * 60:     # 그날 수술이 많으면 같은 수술을 하는 다른 집도의가 맡음
+        doc = min(o.docs, key=lambda x: slot(x) + dur(o, x))
+    m, d = slot(doc), dur(o, doc)
+    assert m + d < 24 * 60, "자정을 넘는 수술"   # 이 자료에는 자정을 넘긴 수술이 없음 (시각끼리 빼도 됨)
+    free[(doc, o.수술일)] = m + d
+    plan.append((doc, m, m + d))
+OPS_DF["집도의"] = [x[0] for x in plan]
+hm = lambda m: f"{m // 60:02d}:{m % 60:02d}:00"
+OPS_DF["시작시각"] = [hm(x[1]) for x in plan]
+OPS_DF["종료시각"] = [hm(x[2]) for x in plan]
+OPS_DF = OPS_DF.sort_values(["수술일", "시작시각", "집도의"]).reset_index(drop=True)
+OPS_DF.insert(0, "수술ID", range(1, len(OPS_DF) + 1))
+OPER = OPS_DF[["수술ID", "입원ID", "진료과", "집도의", "수술명", "수술일", "시작시각", "종료시각"]]
+
 ADM = A[["입원ID", "환자ID", "병동", "진료과", "입원일", "퇴원일", "입원경로", "퇴원형태", "계획입원", "보험유형"]]
 WARD = pd.DataFrame([dict(병동=w, 구분=c["구분"], 주진료과=" · ".join(c["진료과"]), 병상수=c["beds"]) for w, c in WARDS.items()])
 
@@ -304,9 +353,11 @@ DDL = {
     "진료비": "진료비ID INTEGER PRIMARY KEY, 입원ID INTEGER REFERENCES 입원(입원ID), 항목 VARCHAR, 금액 INTEGER, 급여구분 VARCHAR",
     "낙상": "낙상ID INTEGER PRIMARY KEY, 입원ID INTEGER REFERENCES 입원(입원ID), 발생일 DATE, 근무조 VARCHAR, 손상정도 VARCHAR",
     "검사": "검사ID INTEGER PRIMARY KEY, 환자ID VARCHAR REFERENCES 환자(환자ID), 검사일 DATE, 검사명 VARCHAR, 결과값 DOUBLE",
+    "수술": "수술ID INTEGER PRIMARY KEY, 입원ID INTEGER REFERENCES 입원(입원ID), 진료과 VARCHAR, 집도의 VARCHAR, 수술명 VARCHAR, "
+            "수술일 DATE, 시작시각 TIME, 종료시각 TIME",
 }
-FRAMES = {"환자": PT, "병동": WARD, "입원": ADM, "진단": DX, "병동일보": CEN, "근무": DUTY, "진료비": COST, "낙상": FALL, "검사": LABS}
-DATES = {"생년월일", "사망일", "입원일", "퇴원일", "날짜", "근무일", "발생일", "검사일"}
+FRAMES = {"환자": PT, "병동": WARD, "입원": ADM, "진단": DX, "병동일보": CEN, "근무": DUTY, "진료비": COST, "낙상": FALL, "검사": LABS, "수술": OPER}
+DATES = {"생년월일", "사망일", "입원일", "퇴원일", "날짜", "근무일", "발생일", "검사일", "수술일"}
 for t, ddl in DDL.items():
     con.execute(f"CREATE TABLE {t} ({ddl})")
     df = FRAMES[t].copy()
@@ -342,6 +393,9 @@ DESC = {
     "낙상": ("낙상 1건", {"낙상ID": "", "입원ID": "→ 입원", "발생일": "", "근무조": "D 낮 · E 초번 · N 밤", "손상정도": "없음 · 경증 · 중등도 이상"}),
     "검사": ("검사 1건 (환자 1명에 여러 건)", {"검사ID": "", "환자ID": "→ 환자", "검사일": "재원 중 검사 + 일부는 퇴원 뒤 외래 추적 검사",
             "검사명": "알부민 · 헤모글로빈 · 크레아티닌 · 당화혈색소", "결과값": "검체 불량 등으로 결과가 없으면 NULL"}),
+    "수술": ("수술 1건 (외과 · 정형외과 수술 입원에 1건, 2024년)", {"수술ID": "", "입원ID": "→ 입원", "진료과": "외과 · 정형외과",
+            "집도의": "수술한 의사 (가명 의사A ~ 의사G)", "수술명": "복강경 담낭절제술 · 위절제술 · 무릎 인공관절 치환술 등 11가지",
+            "수술일": "", "시작시각": "수술 시작 시각", "종료시각": "수술 끝 시각 — 수술시간(분) = DATEDIFF('minute', 시작시각, 종료시각)"}),
 }
 con = duckdb.connect(OUT, read_only=True)
 out = ["# 가상 병원 CDW (hospital_mini) 데이터 사전", "",

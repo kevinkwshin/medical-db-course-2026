@@ -415,9 +415,10 @@ JOIN countries
   ON studies.nct_id = countries.nct_id
 WHERE studies.nct_id = 'NCT01795521'""", comment="확인: studies 에서는 1행인 시험이 countries 와 연결하면 국가 수만큼 여러 행이 됩니다")
 
-    def hospital_overview(self, intro=None):
-        """가상 병원 CDW 데이터 구성 (11강 '가상 병원 CDW — 12강부터 쓰는 실습 DB' 와 같은 표)"""
-        rows = "\n".join(f"| `{t}` | {mean} | `{pk}` | {fk} | {cols} |" for t, mean, pk, fk, cols in HOSP_TABLES)
+    def hospital_overview(self, intro=None, extra=()):
+        """가상 병원 CDW 데이터 구성 (11강 '가상 병원 CDW — 12강부터 쓰는 실습 DB' 와 같은 표)
+        extra: 그 노트북에서만 쓰는 표를 HOSP_TABLES 와 같은 모양으로 덧붙임 (12주차 수술 표)"""
+        rows = "\n".join(f"| `{t}` | {mean} | `{pk}` | {fk} | {cols} |" for t, mean, pk, fk, cols in list(HOSP_TABLES) + list(extra))
         self.md(f"""
 ## 데이터 구성 — 가상 병원 CDW
 
