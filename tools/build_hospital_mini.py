@@ -18,6 +18,7 @@
   낙상      낙상 1건       낙상ID · 입원ID · 발생일 · 근무조 · 손상정도
   검사      검사 1건       검사ID · 환자ID · 검사일 · 검사명 · 결과값 (3% NULL, 일부는 퇴원 뒤 외래 검사)
   수술      수술 1건       수술ID · 입원ID · 진료과 · 집도의 · 수술명 · 수술일 · 시작시각 · 종료시각 (12강 수술시간 예제, 2026-11-16 추가)
+  근무기록  간호사 1명의 근무 1번   근무기록ID · 간호사ID · 병동 · 근무일 · 근무조 · 출근일시 · 퇴근일시 (과제 2 근무시간, 2026-11-16 추가)
 
 일부러 넣은 실제 병원 자료의 모습 (12 · 13강 · 과제 2 에서 씀)
   - 환자ID 는 '0012345' 처럼 앞자리 0 이 있는 글자 (엑셀에서 숫자로 바뀌면 0 이 사라짐)
@@ -335,6 +336,34 @@ OPS_DF = OPS_DF.sort_values(["수술일", "시작시각", "집도의"]).reset_in
 OPS_DF.insert(0, "수술ID", range(1, len(OPS_DF) + 1))
 OPER = OPS_DF[["수술ID", "입원ID", "진료과", "집도의", "수술명", "수술일", "시작시각", "종료시각"]]
 
+# ---------------------------------------------------------------- 근무기록 (간호사 1명의 근무 1번) — 따로 둔 난수 (2026-11-16, 과제 2 근무시간)
+# 근무 표의 간호사수와 같은 수만큼 병동 간호사 명단에서 뽑음. 정해진 근무 8시간, 퇴근이 늦어진 만큼이 초과근무
+rng4 = np.random.default_rng(SEED + 3)        # 앞의 표들이 바뀌지 않게
+START = {"D": 7, "E": 15, "N": 23}              # D 07~15시 · E 15~23시 · N 23시~다음 날 07시
+OT = {"D": 40, "E": 30, "N": 20}                # 평균 초과근무(분) — 낮 근무에 인수인계 · 입퇴원 · 처치가 많음
+OT_WARD = {"51병동": 8, "52병동": 0, "61병동": -5, "62병동": 5, "71병동": 15, "72병동": 0}
+duty_rows, last_night = [], {}
+for w in WARDS:
+    dw = DUTY[DUTY["병동"] == w]
+    roster = [f"RN{w[:2]}{k:02d}" for k in range(1, int(dw.groupby("근무일")["간호사수"].sum().max() * 1.5) + 1)]
+    for day, g in dw.groupby("근무일", sort=True):
+        need = dict(zip(g["근무조"], g["간호사수"]))
+        pool = [str(x) for x in rng4.permutation(roster)]
+        d_ = [x for x in pool if x not in last_night.get(w, set())][:need["D"]]   # 전날 밤 근무한 간호사는 낮 근무에서 뺌
+        rest = [x for x in pool if x not in d_]
+        e_, n_ = rest[:need["E"]], rest[need["E"]:need["E"] + need["N"]]
+        assert (len(d_), len(e_), len(n_)) == (need["D"], need["E"], need["N"])
+        last_night[w] = set(n_)
+        for s, ids in (("D", d_), ("E", e_), ("N", n_)):
+            for rn in sorted(ids):
+                t0 = dt.datetime.combine(day, dt.time(START[s]))
+                ot = max(0, int(round(rng4.normal(OT[s] + OT_WARD[w], 15))))
+                duty_rows.append((rn, w, day, s, t0, t0 + dt.timedelta(hours=8, minutes=ot)))
+WORK = pd.DataFrame(duty_rows, columns=["간호사ID", "병동", "근무일", "근무조", "출근일시", "퇴근일시"]).sort_values(
+    ["근무일", "병동", "근무조", "간호사ID"]).reset_index(drop=True)
+WORK.insert(0, "근무기록ID", range(1, len(WORK) + 1))
+assert len(WORK) == DUTY["간호사수"].sum()
+
 ADM = A[["입원ID", "환자ID", "병동", "진료과", "입원일", "퇴원일", "입원경로", "퇴원형태", "계획입원", "보험유형"]]
 WARD = pd.DataFrame([dict(병동=w, 구분=c["구분"], 주진료과=" · ".join(c["진료과"]), 병상수=c["beds"]) for w, c in WARDS.items()])
 
@@ -355,8 +384,10 @@ DDL = {
     "검사": "검사ID INTEGER PRIMARY KEY, 환자ID VARCHAR REFERENCES 환자(환자ID), 검사일 DATE, 검사명 VARCHAR, 결과값 DOUBLE",
     "수술": "수술ID INTEGER PRIMARY KEY, 입원ID INTEGER REFERENCES 입원(입원ID), 진료과 VARCHAR, 집도의 VARCHAR, 수술명 VARCHAR, "
             "수술일 DATE, 시작시각 TIME, 종료시각 TIME",
+    "근무기록": "근무기록ID INTEGER PRIMARY KEY, 간호사ID VARCHAR, 병동 VARCHAR REFERENCES 병동(병동), 근무일 DATE, 근무조 VARCHAR, "
+              "출근일시 TIMESTAMP, 퇴근일시 TIMESTAMP",
 }
-FRAMES = {"환자": PT, "병동": WARD, "입원": ADM, "진단": DX, "병동일보": CEN, "근무": DUTY, "진료비": COST, "낙상": FALL, "검사": LABS, "수술": OPER}
+FRAMES = {"환자": PT, "병동": WARD, "입원": ADM, "진단": DX, "병동일보": CEN, "근무": DUTY, "진료비": COST, "낙상": FALL, "검사": LABS, "수술": OPER, "근무기록": WORK}
 DATES = {"생년월일", "사망일", "입원일", "퇴원일", "날짜", "근무일", "발생일", "검사일", "수술일"}
 for t, ddl in DDL.items():
     con.execute(f"CREATE TABLE {t} ({ddl})")
@@ -396,6 +427,9 @@ DESC = {
     "수술": ("수술 1건 (외과 · 정형외과 수술 입원에 1건, 2024년)", {"수술ID": "", "입원ID": "→ 입원", "진료과": "외과 · 정형외과",
             "집도의": "수술한 의사 (가명 의사A ~ 의사G)", "수술명": "복강경 담낭절제술 · 위절제술 · 무릎 인공관절 치환술 등 11가지",
             "수술일": "", "시작시각": "수술 시작 시각", "종료시각": "수술 끝 시각 — 수술시간(분) = DATEDIFF('minute', 시작시각, 종료시각)"}),
+    "근무기록": ("간호사 1명의 근무 1번 (근무 표의 간호사수와 같은 수)", {"근무기록ID": "", "간호사ID": "간호사 (가명, RN + 병동 번호 + 순번)",
+             "병동": "→ 병동", "근무일": "근무를 시작한 날", "근무조": "D 07~15시 · E 15~23시 · N 23시~다음 날 07시 (정해진 근무 8시간)",
+             "출근일시": "근무 시작 일시", "퇴근일시": "실제로 퇴근한 일시 (밤 근무는 다음 날) — 근무시간(분) = DATEDIFF('minute', 출근일시, 퇴근일시)"}),
 }
 con = duckdb.connect(OUT, read_only=True)
 out = ["# 가상 병원 CDW (hospital_mini) 데이터 사전", "",

@@ -414,7 +414,7 @@ JOIN countries
   ON studies.nct_id = countries.nct_id
 WHERE studies.nct_id = 'NCT01795521'""", comment="확인: studies 에서는 1행인 시험이 countries 와 연결하면 국가 수만큼 여러 행이 됩니다")
 
-    def hospital_overview(self, intro=None, extra=()):
+    def hospital_overview(self, intro=None, extra=(), join_eg="ON 낙상.입원ID = 입원.입원ID"):
         """가상 병원 CDW 데이터 구성 (11강 '가상 병원 CDW — 12강부터 쓰는 실습 DB' 와 같은 표)
         extra: 그 노트북에서만 쓰는 표를 HOSP_TABLES 와 같은 모양으로 덧붙임 (12주차 수술 표)"""
         rows = "\n".join(f"| `{t}` | {mean} | `{pk}` | {fk} | {cols} |" for t, mean, pk, fk, cols in list(HOSP_TABLES) + list(extra))
@@ -428,7 +428,7 @@ WHERE studies.nct_id = 'NCT01795521'""", comment="확인: studies 에서는 1행
 {rows}
 
 - 환자 1명이 여러 번 입원하면 `입원` 표에 여러 행이 있습니다 (1 : N). 입원 1건에 진료비 · 진단 · 낙상도 여러 행일 수 있습니다.
-- 표를 이을 때는 `ON 낙상.입원ID = 입원.입원ID` 처럼 외래키와 기본키를 맞춥니다.
+- 표를 이을 때는 `{join_eg}` 처럼 외래키와 기본키를 맞춥니다.
 - 2024-12-31 에 아직 재원 중인 입원은 `퇴원일` 이 비어 있습니다(NULL). 환자ID 는 앞자리 0 이 있는 글자입니다.
 """)
 

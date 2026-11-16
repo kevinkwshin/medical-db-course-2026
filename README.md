@@ -16,7 +16,7 @@
 | <sub>9주차</sub> | <sub>**과제 1**</sub> | <sub>일반적인 SQL 사용법 — 잘못된 SQL 12개 고치기 (조회 · 집계 · JOIN) · **제출기한 2026-11-10(화)**</sub> | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/과제1.ipynb) |
 | <sub>10주차</sub> | <sub>실습</sub> | <sub>데이터 수정 · 트랜잭션 (연습용 표 5행)</sub> | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/10_실습_데이터수정.ipynb) |
 | <sub>12주차</sub> | <sub>실습</sub> | <sub>SQL로 병원 통계 분석 — 입원 건수 · 재원일수 · 수술시간 · 병상 가동률 · 진료비 (가상 병원 CDW)</sub> | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/12_실습_원무데이터.ipynb) |
-| <sub>12주차</sub> | <sub>**과제 2**</sub> | <sub>병동별 낙상 발생률 (가상 병원 CDW, 12주차까지의 SQL) — 10문항 × 2점 · **제출기한 2026-12-08(화)**</sub> | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/과제2.ipynb) |
+| <sub>12주차</sub> | <sub>**과제 2**</sub> | <sub>낙상 발생률과 간호사 초과근무 (가상 병원 CDW, 12주차까지의 SQL) — 10문항 × 2점 · **제출기한 2026-12-08(화)**</sub> | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/과제2.ipynb) |
 | <sub>13주차</sub> | <sub>실습</sub> | <sub>의료 질 · 간호 지표 만들기 — 30일 재입원율 · 간호사 1인당 환자 수 (가상 병원 CDW)</sub> | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kevinkwshin/medical-db-course-2026/blob/main/notebooks/13_실습_지표만들기.ipynb) |
 
 > Colab 배지를 **새 창**으로 열려면 배지에서 **마우스 오른쪽 버튼 → 새 창에서 링크 열기**를 누르세요.
@@ -38,6 +38,7 @@
 | 근무 | 병동 × 날짜 × 근무조 | 근무조(D · E · N), 간호사수 |
 | 진료비 · 낙상 | 입원 × 항목 · 낙상 1건 | 항목 · 금액 · 급여구분 / 발생일 · 근무조 · 손상정도 |
 | 수술 | 수술 1건 | 진료과, 집도의(가명), 수술명, 수술일, 시작시각 · 종료시각 (12주차 수술시간) |
+| 근무기록 | 간호사 1명의 근무 1번 | 간호사ID(가명), 병동, 근무일, 근무조, 출근일시 · 퇴근일시 (과제 2 근무시간) |
 
 ### aact_mini (7~10주차)
 
